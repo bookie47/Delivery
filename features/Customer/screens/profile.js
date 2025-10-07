@@ -5,8 +5,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 
-
-const defaultImage = 'https://i.ibb.co/y4n8n20/user.jpg';
+const uri = require("../../../assets/profile/unknownuser.jpg");
 
 export default function profile(){
     return(
@@ -14,7 +13,7 @@ export default function profile(){
             <View style={{flex:1, backgroundColor:'#00B14F'}}>
             </View>
             <View style={{flex:4}}>
-                <Image source={{uri:defaultImage}} style={{width:155, height:155, borderRadius:'100%', borderWidth:1,marginHorizontal:125, marginTop:35}}/>
+                <Image source={uri} style={{width:155, height:155, borderRadius:'100%', borderWidth:1,marginHorizontal:125, marginTop:35}}/>
                     <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', marginTop:5}}>
                         <Text style={{color:'blue', textDecorationLine:'underline', marginLeft:160}}>แก้ไขรูปภาพ</Text> 
                         <Feather style={{paddingLeft:5}} name="edit" size={20} color="black" />
