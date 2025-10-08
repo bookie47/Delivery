@@ -5,14 +5,15 @@ import { SignUp } from './features/auth/screens/signUp';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Menu } from './features/Customer/screens/menu';
 import { Profile } from './features/Customer/screens/profileUser';
-import { History } from './features/Customer/screens/orderHistory';
+import { History } from './features/order/screens/orderHistory';
+import { Detail } from './features/order/screens/orderDetail';
 import { Home } from './features/Customer/screens/Home';
 import { BottomBar } from './components/bottomBar';
 
 export default function App() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Profile/>
+      <Detail/>
     </SafeAreaView>
   );
 }
