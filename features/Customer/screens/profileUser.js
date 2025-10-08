@@ -16,7 +16,7 @@ export const Profile = () =>{
             </View>
             <View style={{flex:2}}>
                 <TouchableOpacity>
-                    <Image source={uri} style={{alignSelf:'center',width:130, height:130, borderRadius:'100%', borderWidth:1, marginTop:10}}/>
+                    <Image source={uri} style={{alignSelf:'center',width:130, height:130, borderRadius:'100%', borderWidth:1, marginTop:20}}/>
                 </TouchableOpacity>
                     <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', marginTop:5}}>
                         <Text style={{color:'blue', textDecorationLine:'underline', marginLeft:160}}>แก้ไขรูปภาพ</Text> 
@@ -25,21 +25,21 @@ export const Profile = () =>{
             </View>
             <View style={{flex:8, marginTop:30}}>
                 <View style={{flex:1}}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', marginBottom:5}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop:15, marginBottom:5}}>
                         <FontAwesome style={{marginLeft:30}} name="user" size={20} color="black" />   
                         <Text style={{marginLeft:10}}>ชื่อ-สกุล</Text>  
                     </View>
                     <TextInput style={style.textInputData} textAlign='' placeholder='Your name' />
                 </View>
                 <View style={{flex:1}}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop:5, marginBottom:5}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop:15, marginBottom:5}}>
                         <Entypo style={{marginLeft:30}} name="email" size={20} color="black" />
                         <Text style={{marginLeft:10}}>Email-Address</Text> 
                     </View>
                     <TextInput style={style.textInputData} placeholder='example@gmail.com'/>
                 </View>
                 <View style={{flex:1}}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop:10, marginBottom:5}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop:15, marginBottom:5}}>
                         <Entypo style={{marginLeft:30}} name="phone" size={20} color="black" />
                         <Text style={{marginLeft:10}}>โทรศัพท์</Text> 
                     </View>

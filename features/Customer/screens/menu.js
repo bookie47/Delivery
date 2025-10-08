@@ -10,7 +10,7 @@ export const Menu = () =>{
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
             <View style={{flex: 1, backgroundColor:'#00B14F'}}>
-                <Text style={{fontSize:25, marginTop:15, marginHorizontal:20}}>Menu</Text>
+                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:20}}>Menu</Text>
             </View>
             <View style={{flex: 10}}>
                 <View style={{flex: 3}}>
