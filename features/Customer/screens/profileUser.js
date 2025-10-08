@@ -1,15 +1,15 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBar } from '../../../components/bottomBar'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 
-const uri = require("../../../assets/profile/unknownuser.jpg");
-
 export const Profile = () =>{
+    const uri = require("../../../assets/profile/default.jpg");
     return(
-        <SafeAreaView style={{flex:1}}>
+        <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
             <View style={{flex:1, backgroundColor:'#00B14F'}}>
             </View>
             <View style={{flex:4}}>
@@ -53,7 +53,9 @@ export const Profile = () =>{
                         <Text style={{fontSize:20, fontWeight:'bold'}}>Update Profile</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={{flex:1, borderWidth:1, borderColor:'green'}}></View>
+                <View style={{flex:1, backgroundColor:'#00B14F'}}>
+                    <BottomBar/>
+                </View>
             </View>
         </SafeAreaView>
     )
