@@ -7,7 +7,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 
 const uri = require("../../../assets/profile/unknownuser.jpg");
 
-export default function profile(){
+export const Profile = () =>{
     return(
         <SafeAreaView style={{flex:1}}>
             <View style={{flex:1, backgroundColor:'#00B14F'}}>
