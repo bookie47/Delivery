@@ -26,7 +26,7 @@ export const History = () =>{
                                 <Text>KFC(เคเอฟซี) - ตึกคอมศรีราชา</Text>
                                 <Text style={{color:'green'}}>100$</Text>
                                 <Text>1 รายการ</Text>
-                                <Text>21 ส.ค 2568, 12:00 น</Text>
+                                <Text>21 ส.ค 2568 12:00 น</Text>
                             </View>
                             <TouchableOpacity style={{borderRadius:20 ,backgroundColor:'#1EFF00',height:35, width:75, marginTop:85, left:30}}>
                                 <Text style={{left:10, marginTop:7}}>ส่งอีกครั้ง</Text>
@@ -40,7 +40,7 @@ export const History = () =>{
                                 <Text>KFC(เคเอฟซี) - ตึกคอมศรีราชา</Text>
                                 <Text style={{color:'green'}}>100$</Text>
                                 <Text>1 รายการ</Text>
-                                <Text>21 ส.ค 2568, 12:00 น</Text>
+                                <Text>21 ส.ค 2568 12:00 น</Text>
                             </View>
                             <TouchableOpacity style={{borderRadius:20 ,backgroundColor:'#1EFF00',height:35, width:75, marginTop:85, left:30}}>
                                 <Text style={{left:10, marginTop:7}}>ส่งอีกครั้ง</Text>
@@ -54,7 +54,7 @@ export const History = () =>{
                                 <Text>KFC(เคเอฟซี) - ตึกคอมศรีราชา</Text>
                                 <Text style={{color:'green'}}>100$</Text>
                                 <Text>1 รายการ</Text>
-                                <Text>21 ส.ค 2568, 12:00 น</Text>
+                                <Text>21 ส.ค 2568 12:00 น</Text>
                             </View>
                             <TouchableOpacity style={{borderRadius:20 ,backgroundColor:'#1EFF00',height:35, width:75, marginTop:85, left:30}}>
                                 <Text style={{left:10, marginTop:7}}>ส่งอีกครั้ง</Text>
