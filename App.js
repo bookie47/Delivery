@@ -5,11 +5,13 @@ import { SignUp } from './features/auth/screens/signUp';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {Home} from './features/Customer/screens/Home';
 import { BottomBar } from './components/bottomBar';
+import { InfoMarket } from './features/Customer/screens/InfoMarket';
+import { Ordermenu } from './features/Customer/screens/Order';
 
 export default function App() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Home />
+      <Ordermenu />
       </SafeAreaView>
   );
 }
