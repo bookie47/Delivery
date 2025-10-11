@@ -6,9 +6,9 @@ export const Detail = () =>{
     const uri = require("../../../assets/Food/kfc.jpg");
     const kaitod = require("../../../assets/Food/kaitod.jpg");
     return(
-        <SafeAreaView style={{flex:1, backgroundColor:'##F6F6F6'}}>
-            <View style={{flex:1, backgroundColor:'#00B14F'}}>
-                <Text style={{fontSize:25, fontWeight:'bold', left:50, marginTop:15}}>รายละเอียดคำสั่งซื้อ</Text>
+        <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
+            <View style={{flex: 1, justifyContent:'center' ,backgroundColor:'#34656D'}}>
+                <Text style={{fontSize:25, fontWeight:'bold', marginHorizontal:25}}>รายละเอียดคำสั่งซื้อ</Text>
             </View>
             <View style={{flex:10}}>
                 <View style={{flex:5}}>
