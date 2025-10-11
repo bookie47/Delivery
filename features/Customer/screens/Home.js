@@ -10,7 +10,7 @@ export const Home = () => {
       <View style={{ flex: 1, backgroundColor: "#334443" }}>
         <SearchBar />
       </View>
-      <View style={{ flex: 9, backgroundColor: "#FAF8F1" }}>
+      <View style={{ flex: 10, backgroundColor: "#FAF8F1" }}>
         <View
           style={{
             flexDirection: "row",
@@ -78,7 +78,7 @@ export const Home = () => {
           </View>
         </View>
       </View>
-      <View style={{ flex: 1, backgroundColor: "#34656D" }}>
+      <View style={{ flex: 1 }}>
         <BottomBar />
       </View>
     </View>

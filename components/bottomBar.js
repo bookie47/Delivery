@@ -11,7 +11,8 @@ export const BottomBar = () => {
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
-          justifyContent:'space-around'
+          justifyContent:'space-around',
+          backgroundColor:'#34656D'
           
         }}
       >
