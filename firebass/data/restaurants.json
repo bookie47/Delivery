@@ -1,0 +1,50 @@
+{
+  "KFC": {
+    "name": "KFC (เคเอฟซี) - ตึกคอมศรีราชา",
+    "category": "Fast Food",
+    "address": "ตึกคอม ศรีราชา, ชลบุรี",
+    "phone": "080-123-4567",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/yourapp.appspot.com/o/kfc.png",
+    "rating": 4.5,
+    "openTime": "09:00",
+    "closeTime": "21:00",
+    "isOpen": true,
+    "deliveryFee": 10,
+    "location": {
+      "lat": 13.1623,
+      "lng": 100.9281
+    }
+  },
+  "MK_002": {
+    "name": "MK Restaurant - โรบินสันศรีราชา",
+    "category": "ชาบู สุกี้",
+    "address": "ห้างโรบินสัน ศรีราชา",
+    "phone": "089-987-6543",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/yourapp.appspot.com/o/mk.png",
+    "rating": 4.2,
+    "openTime": "10:00",
+    "closeTime": "21:00",
+    "isOpen": true,
+    "deliveryFee": 15,
+    "location": {
+      "lat": 13.1735,
+      "lng": 100.9302
+    }
+  },
+  "SWN_003": {
+    "name": "S&P ศรีราชา",
+    "category": "อาหารไทย",
+    "address": "อ.ศรีราชา, จ.ชลบุรี",
+    "phone": "083-111-2222",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/yourapp.appspot.com/o/snp.png",
+    "rating": 4.0,
+    "openTime": "08:30",
+    "closeTime": "20:00",
+    "isOpen": true,
+    "deliveryFee": 12,
+    "location": {
+      "lat": 13.1655,
+      "lng": 100.9250
+    }
+  }
+}

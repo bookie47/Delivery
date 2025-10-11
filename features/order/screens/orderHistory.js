@@ -6,8 +6,8 @@ export const History = () =>{
     const uri = require("../../../assets/Food/kfc.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
-            <View style={{flex:1, backgroundColor:'#00B14F'}}>
-                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:20}}>History</Text>
+            <View style={{flex: 1, justifyContent:'center' ,backgroundColor:'#34656D'}}>
+                <Text style={{fontSize:25, fontWeight:'bold', marginHorizontal:30}}>History</Text>
             </View>
             <View style={{flex:10}}>
                 <View style={{flex:1, flexDirection:'row'}}>
@@ -64,7 +64,7 @@ export const History = () =>{
                     <View style={{flex:1}}></View>
                 </View>
             </View>
-            <View style={{flex:1, backgroundColor:'#00B14F'}}>
+            <View style={{flex:1}}>
                 <BottomBar/>
             </View>
         </SafeAreaView>

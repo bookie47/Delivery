@@ -1,0 +1,69 @@
+{
+  "KFC": {
+    "menu_001": {
+      "name": "ข้าวไก่ทอด",
+      "price": 70,
+      "imageUrl": "",
+      "category": "เมนูหลัก",
+      "isAvailable": true,
+      "description": "ข้าวไก่ทอดกรอบพร้อมน้ำจิ้มแจ่ว"
+    },
+    "menu_002": {
+      "name": "เป๊ปซี่",
+      "price": 20,
+      "imageUrl": "",
+      "category": "เครื่องดื่ม",
+      "isAvailable": true
+    },
+    "menu_003": {
+      "name": "ข้าวไก่ทอด",
+      "price": 70,
+      "imageUrl": "",
+      "category": "เมนูหลัก",
+      "isAvailable": true,
+      "description": "ข้าวไก่ทอดกรอบพร้อมน้ำจิ้มแจ่ว"
+    },
+    "menu_004": {
+      "name": "เป๊ปซี่",
+      "price": 20,
+      "imageUrl": "",
+      "category": "เครื่องดื่ม",
+      "isAvailable": true
+    },
+    "menu_005": {
+      "name": "เป๊ปซี่",
+      "price": 20,
+      "imageUrl": "",
+      "category": "เครื่องดื่ม",
+      "isAvailable": true
+    }
+  },
+  "MK": {
+    "menu_001": {
+      "name": "สุกี้หมูน้ำใส",
+      "price": 120,
+      "category": "เมนูหลัก",
+      "isAvailable": true
+    },
+    "menu_002": {
+      "name": "ชาเย็น",
+      "price": 35,
+      "category": "เครื่องดื่ม",
+      "isAvailable": true
+    }
+  },
+  "SWN_003": {
+    "menu_001": {
+      "name": "ข้าวผัดกุ้ง",
+      "price": 85,
+      "category": "เมนูหลัก",
+      "isAvailable": true
+    },
+    "menu_002": {
+      "name": "น้ำเปล่า",
+      "price": 10,
+      "category": "เครื่องดื่ม",
+      "isAvailable": true
+    }
+  }
+}

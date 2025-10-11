@@ -9,8 +9,8 @@ export const Menu = () =>{
     const uri = require("../../../assets/profile/default.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
-            <View style={{flex: 1, backgroundColor:'#00B14F'}}>
-                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:20}}>Menu</Text>
+            <View style={{flex: 1, justifyContent:'center' ,backgroundColor:'#34656D'}}>
+                <Text style={{fontSize:25, fontWeight:'bold',  marginHorizontal:25}}>Menu</Text>
             </View>
             <View style={{flex: 10}}>
                 <View style={{flex: 3}}>
@@ -37,7 +37,7 @@ export const Menu = () =>{
                     </View>
                 </View>
                 </View>
-                <View style={{flex: 1, backgroundColor:'#00B14F'}}>
+                <View style={{flex: 1}}>
                     <BottomBar/>
                 </View>
         </SafeAreaView>
