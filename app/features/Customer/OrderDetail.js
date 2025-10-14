@@ -26,6 +26,7 @@ export default function Detail() {
               marginTop: 20,
               alignSelf: "center",
               resizeMode: "cover",
+              borderRadius:60,
             }}
           />
           <View style={{ marginHorizontal: 30 }}>
@@ -161,6 +162,7 @@ export default function Detail() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginLeft:20,
+                marginTop:20,
               }}
             >
               <Ionicons name="chevron-back-outline" size={28} color="white" />

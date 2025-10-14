@@ -4,7 +4,7 @@ import { BottomBar } from '../../../../components/bottomBar';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Feather from '@expo/vector-icons/Feather';
-
+import { router } from 'expo-router';
 export default function Menu() {
     const uri = require("../../../../assets/profile/default.jpg");
     return(
@@ -26,11 +26,11 @@ export default function Menu() {
                 </View>
                 <View style={{flex: 3}}>
                     <View style={{flex:3, alignSelf:'center', paddingVertical:20, paddingHorizontal:10,width: '90%', height: 130,}}>
-                        <TouchableOpacity style={{flexDirection:'row', borderWidth: 1, borderColor:'#F6F6F6',borderBottomWidth: 0, borderTopLeftRadius: 10, borderTopRightRadius: 10, padding: 10, backgroundColor:'#fff'}}>
+                        <TouchableOpacity style={{flexDirection:'row', borderWidth: 1, borderColor:'#F6F6F6',borderBottomWidth: 0, borderTopLeftRadius: 10, borderTopRightRadius: 10, padding: 10, backgroundColor:'#fff'}} onPress={()=>{router.push('/features/Customer/profileUser')}}>
                             <Feather style={{marginTop:2}} name="edit" size={17} color="black" />
                             <Text style={{fontSize:15, paddingHorizontal:10 }}>แก้ไขข้อมูลส่วนตัว</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={{flexDirection:'row' ,borderWidth: 1 , borderColor:'#F6F6F6', borderBottomWidth: 1, borderBottomLeftRadius:10, borderBottomRightRadius:10, padding: 10, backgroundColor:'#fff', marginTop:3}}>
+                        <TouchableOpacity style={{flexDirection:'row' ,borderWidth: 1 , borderColor:'#F6F6F6', borderBottomWidth: 1, borderBottomLeftRadius:10, borderBottomRightRadius:10, padding: 10, backgroundColor:'#fff', marginTop:3}} onPress={()=>{router.replace('/features/auth/signIn')}}>
                             <MaterialIcons style={{marginTop:2}} name="logout" size={17} color="red" />
                             <Text style={{fontSize:15, paddingHorizontal:10 ,color:'red'}}>Log Out</Text>
                         </TouchableOpacity>

@@ -7,7 +7,7 @@ import ResetPassword from "./features/auth/resetPassword";
 export default function Home() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ResetPassword />
+      <SignIn />
     </SafeAreaView>
   );
 }

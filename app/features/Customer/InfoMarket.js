@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { router } from "expo-router";
 import CheckoutSheet from "../../../components/CheckOut";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InfoMarket() {
   const [numBox, setnumBox] = useState([0, 0, 0, 0]);
@@ -36,13 +37,14 @@ export default function InfoMarket() {
 
    const [open, setOpen] = useState(false);
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1,marginTop:10 }}>
       <View style={{ flex: 2.5 }}>
         <BannerMarket />
       </View>
       <View style={{ flex: 10, margin: 20 }}>
         {numBox.map((item, index) => {
           return (
+
             <View key={index} style={styles.container}>
               <View style={{ flex: 1, justifyContent: "center" }}>
                 <View style={styles.boxPofile}></View>
@@ -87,7 +89,7 @@ export default function InfoMarket() {
           );
         })}
 
-        <View style={{ flexDirection: "row",justifyContent:'space-between',marginTop:150 }}>
+        <View style={{ flexDirection: "row",justifyContent:'space-between',marginTop:100 }}>
           <TouchableOpacity
             onPress={() => {
               router.push("./(tabs)/Home");

@@ -38,7 +38,7 @@ export default function SignIn(){
               marginBottom: 30,
             }}
           >
-            <TouchableOpacity>
+            <TouchableOpacity onPress ={()=>{router.push('/features/auth/resetPassword')}}>
               <Text>Forgot your password?</Text>
             </TouchableOpacity>
           </View>
