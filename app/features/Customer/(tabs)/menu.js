@@ -1,21 +1,21 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomBar } from '../../../components/bottomBar'; 
+import { BottomBar } from '../../../../components/bottomBar'; 
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Feather from '@expo/vector-icons/Feather';
-
-export const Menu = () =>{
-    const uri = require("../../../assets/profile/default.jpg");
+import { router } from 'expo-router';
+export default function Menu() {
+    const uri = require("../../../../assets/profile/default.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
-            <View style={{flex: 1, justifyContent:'center' ,backgroundColor:'#34656D'}}>
-                <Text style={{fontSize:25, fontWeight:'bold',  marginHorizontal:25}}>Menu</Text>
+            <View style={{flex: 1, backgroundColor:'#FA4A0C'}}>
+                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:30,color:'white'}}>Menu</Text>
             </View>
             <View style={{flex: 10}}>
                 <View style={{flex: 3}}>
                     <View style={{flex:4}}>
-                        <Image  source={uri} style={{width:165, height:165, borderRadius:'100%',marginHorizontal:125, marginTop:60, marginBottom:10, alignSelf:'center'}} ></Image>
+                        <Image  source={uri} style={{width:165, height:165, borderRadius:100,marginHorizontal:125, marginTop:60, marginBottom:10, alignSelf:'center'}} ></Image>
                     </View>
                     <View style={{flex: 1}}>
                         <Text style={{fontSize:24, alignSelf:'center', marginTop:25}}>KU CPE</Text>
@@ -26,24 +26,18 @@ export const Menu = () =>{
                 </View>
                 <View style={{flex: 3}}>
                     <View style={{flex:3, alignSelf:'center', paddingVertical:20, paddingHorizontal:10,width: '90%', height: 130,}}>
-                        <TouchableOpacity style={{flexDirection:'row', borderWidth: 1, borderColor:'#F6F6F6',borderBottomWidth: 0, borderTopLeftRadius: 10, borderTopRightRadius: 10, padding: 10, backgroundColor:'#fff'}}>
+                        <TouchableOpacity style={{flexDirection:'row', borderWidth: 1, borderColor:'#F6F6F6',borderBottomWidth: 0, borderTopLeftRadius: 10, borderTopRightRadius: 10, padding: 10, backgroundColor:'#fff'}} onPress={()=>{router.push('/features/Customer/profileUser')}}>
                             <Feather style={{marginTop:2}} name="edit" size={17} color="black" />
                             <Text style={{fontSize:15, paddingHorizontal:10 }}>แก้ไขข้อมูลส่วนตัว</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={{flexDirection:'row' ,borderWidth: 1 , borderColor:'#F6F6F6', borderBottomWidth: 1, borderBottomLeftRadius:10, borderBottomRightRadius:10, padding: 10, backgroundColor:'#fff', marginTop:3}}>
+                        <TouchableOpacity style={{flexDirection:'row' ,borderWidth: 1 , borderColor:'#F6F6F6', borderBottomWidth: 1, borderBottomLeftRadius:10, borderBottomRightRadius:10, padding: 10, backgroundColor:'#fff', marginTop:3}} onPress={()=>{router.replace('/features/auth/signIn')}}>
                             <MaterialIcons style={{marginTop:2}} name="logout" size={17} color="red" />
                             <Text style={{fontSize:15, paddingHorizontal:10 ,color:'red'}}>Log Out</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
                 </View>
-                <View style={{flex: 1}}>
-                    <BottomBar/>
-                </View>
         </SafeAreaView>
     )
 }
 
-const styles = StyleSheet.create({
-
-})

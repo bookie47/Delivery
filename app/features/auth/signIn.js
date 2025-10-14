@@ -1,7 +1,8 @@
+import { router } from "expo-router";
 import React from "react";
 import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
 
-export const SignIn = () => {
+export default function SignIn(){
   const uri = require("../../../assets/Logo/deli.png");
 
   return (
@@ -37,7 +38,7 @@ export const SignIn = () => {
               marginBottom: 30,
             }}
           >
-            <TouchableOpacity>
+            <TouchableOpacity onPress ={()=>{router.push('/features/auth/resetPassword')}}>
               <Text>Forgot your password?</Text>
             </TouchableOpacity>
           </View>
@@ -46,12 +47,14 @@ export const SignIn = () => {
         <TouchableOpacity
           style={{
             alignItems: "center",
+            justifyContent:'center',
             width: 150,
+            height:50,
             borderRadius: 20,
-            backgroundColor: "#00b14f",
-            
+            backgroundColor: "#FA4A0C",
+
           }}
-          onPress={()=>{alert("Login Success!!!")}}
+          onPress={()=> router.replace("/features/Customer/Home")}
         >
           <Text style={{ fontSize: 32, fontWeight: 800, color: "white" }}>
             Sign In
@@ -60,7 +63,7 @@ export const SignIn = () => {
 
         <View style={{ alignItems: "center", marginTop: 20 }}>
           <Text style={{ fontWeight: "bold" }}>Don't have an account?</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={()=>{router.push('/features/auth/signUp')}}>
             <Text
               style={{ fontWeight: "bold", textDecorationLine: "underline" }}
             >

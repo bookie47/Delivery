@@ -1,18 +1,17 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomBar } from '../../../components/bottomBar'
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 
-export const Profile = () =>{
+export default function Profile(){
     const uri = require("../../../assets/profile/default.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
-            <View style={{flex: 1, justifyContent:'center' ,backgroundColor:'#34656D'}}>
-                <Text style={{fontSize:25, marginHorizontal:30}}>แก้ไขข้อมูลส่วนตัว</Text>
+            <View style={{flex:1, backgroundColor:'#FA4A0C'}}>
+                <Text style={{fontSize:25, marginTop:15, marginHorizontal:20,color:'white'}}>แก้ไขข้อมูลส่วนตัว</Text>
             </View>
             <View style={{flex:2}}>
                 <TouchableOpacity>
@@ -53,12 +52,9 @@ export const Profile = () =>{
                     <TextInput style={{borderWidth:1, borderRadius:10, paddingVertical:10 ,paddingHorizontal:12, width:'90%', alignSelf:'center', marginTop:4, height:135, textAlignVertical:'top'}} placeholder='100/75 ต.ทุ่งสุขลา อ.ศรีราชา จ.ชลบุรี 20230' numberOfLines={4} multiline={true} textAlignVertical="top"/>
                 </View>
                 <View style={{flex:1}}>
-                    <TouchableOpacity style={{borderRadius:25, backgroundColor:'#34656D',paddingVertical:10, paddingHorizontal:24, alignItems:'center', width:'75%', left:50, marginTop:7}}>
-                        <Text style={{fontSize:20, fontWeight:'bold'}}>Update Profile</Text>
+                        <TouchableOpacity style={{borderRadius:25, backgroundColor:'#FA4A0C',paddingVertical:10, paddingHorizontal:24, alignItems:'center', width:'75%', left:50, marginTop:7}} onPress={()=>{alert("Update Success")}}>
+                        <Text style={{fontSize:20, fontWeight:'bold',color:'white'}}>Update Profile</Text>
                     </TouchableOpacity>
-                </View>
-                <View style={{flex:1}}>
-                    <BottomBar/>
                 </View>
             </View>
         </SafeAreaView>

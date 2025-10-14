@@ -1,9 +1,17 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { BottomBar } from "../../../components/bottomBar";
-export const Ordermenu = () => {
+import { SearchBar } from "../../../components/searchBar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
+import CheckoutSheet from "../../../components/CheckOut";
+export default function Ordermenu() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: "#334443" }}></View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: "#334443" }}>
+        <SearchBar />
+      </View>
       <View style={{ flex: 10 }}>
         <View
           style={{
@@ -84,26 +92,24 @@ export const Ordermenu = () => {
             </View>
           </View>
 
-          <TouchableOpacity onPress={()=>{alert("Buy Now!!!!")}}>
+          <TouchableOpacity onPress={() => setOpen(true)}>
             <View
               style={{
                 justifyContent: "center",
                 alignItems: "center",
                 width: 200,
                 height: 50,
-                backgroundColor: "#01C257",
+                backgroundColor: "#FA4A0C",
                 marginBottom: 30,
-                borderRadius: 20,
+                borderRadius: 30,
               }}
             >
               <Text style={{ color: "white", fontSize: 20 }}>Buy Now</Text>
+              <CheckoutSheet visible={open} onClose={() => setOpen(false)} />
             </View>
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ flex: 1 }}>
-        <BottomBar />
-      </View>
-    </View>
+    </SafeAreaView>
   );
-};
+}
