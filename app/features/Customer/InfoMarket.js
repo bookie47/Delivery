@@ -11,8 +11,10 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState, useEffect } from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { router } from "expo-router";
+import CheckoutSheet from "../../../components/CheckOut";
 
-export const InfoMarket = () => {
+export default function InfoMarket() {
   const [numBox, setnumBox] = useState([0, 0, 0, 0]);
   useEffect(() => {
     console.log("numBox changed ->", numBox); // ✅ ค่านี้คือของจริงหลังอัปเดต
@@ -31,6 +33,8 @@ export const InfoMarket = () => {
       setnumBox(newBox);
     }
   };
+
+   const [open, setOpen] = useState(false);
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 2.5 }}>
@@ -83,38 +87,45 @@ export const InfoMarket = () => {
           );
         })}
 
-        <View>
-          <View
-            style={{
-              justifyContent: "flex-end",
-              alignItems: "flex-end",
-              marginTop: 50,
+        <View style={{ flexDirection: "row",justifyContent:'space-between',marginTop:150 }}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("./(tabs)/Home");
             }}
           >
-            <TouchableOpacity>
-              <View
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  backgroundColor: "green",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <FontAwesome5 name="shopping-cart" size={24} color="white" />
-              </View>
-            </TouchableOpacity>
-          </View>
+            <View
+              style={{
+                backgroundColor: "#FA4A0C",
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons name="chevron-back-outline" size={28} color="white" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setOpen(true)}>
+            <View
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                backgroundColor: "#FA4A0C",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <FontAwesome5 name="shopping-cart" size={24} color="white" />
+              <CheckoutSheet visible={open} onClose={() => setOpen(false)} />
+            </View>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={{ flex: 1 }}>
-        <BottomBar />
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

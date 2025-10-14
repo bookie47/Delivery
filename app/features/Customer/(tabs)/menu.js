@@ -1,21 +1,21 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomBar } from '../../../components/bottomBar'; 
+import { BottomBar } from '../../../../components/bottomBar'; 
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Feather from '@expo/vector-icons/Feather';
 
-export const Menu = () =>{
-    const uri = require("../../../assets/profile/default.jpg");
+export default function Menu() {
+    const uri = require("../../../../assets/profile/default.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
-            <View style={{flex: 1, backgroundColor:'#00B14F'}}>
-                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:20}}>Menu</Text>
+            <View style={{flex: 1, backgroundColor:'#FA4A0C'}}>
+                <Text style={{fontSize:25, fontWeight:'bold',marginTop:15, marginHorizontal:30,color:'white'}}>Menu</Text>
             </View>
             <View style={{flex: 10}}>
                 <View style={{flex: 3}}>
                     <View style={{flex:4}}>
-                        <Image  source={uri} style={{width:165, height:165, borderRadius:'100%',marginHorizontal:125, marginTop:60, marginBottom:10, alignSelf:'center'}} ></Image>
+                        <Image  source={uri} style={{width:165, height:165, borderRadius:100,marginHorizontal:125, marginTop:60, marginBottom:10, alignSelf:'center'}} ></Image>
                     </View>
                     <View style={{flex: 1}}>
                         <Text style={{fontSize:24, alignSelf:'center', marginTop:25}}>KU CPE</Text>
@@ -37,13 +37,7 @@ export const Menu = () =>{
                     </View>
                 </View>
                 </View>
-                <View style={{flex: 1, backgroundColor:'#00B14F'}}>
-                    <BottomBar/>
-                </View>
         </SafeAreaView>
     )
 }
 
-const styles = StyleSheet.create({
-
-})

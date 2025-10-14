@@ -3,7 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 
 export const SearchBar = () => {
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1,backgroundColor:'#FA4A0C' }}>
       <View
         style={{
           flex: 1,
@@ -33,7 +33,7 @@ export const SearchBar = () => {
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: 25, // ครึ่งหนึ่งของ width/height = วงกลม
+                borderRadius: 25,
                 backgroundColor: "white",
                 justifyContent: "center",
                 alignItems: "center",

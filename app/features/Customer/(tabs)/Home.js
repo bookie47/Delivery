@@ -1,16 +1,20 @@
-import { View, Text } from "react-native";
-import { BottomBar } from "../../../components/bottomBar";
-import { SearchBar } from "../../../components/searchBar";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import { BottomBar } from "../../../../components/bottomBar";
+import { SearchBar } from "../../../../components/searchBar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
+import { router } from "expo-router";
 
-export const Home = () => {
+export default function Home() {
   const boxes = Array.from({ length: 9 });
+  const [balnace, setBalance] = useState(500);
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: "#334443" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F6F6F6" }}>
+      <View style={{ flex: 1 }}>
         <SearchBar />
       </View>
-      <View style={{ flex: 10, backgroundColor: "#FAF8F1" }}>
+      <View style={{ flex: 10 }}>
         <View
           style={{
             flexDirection: "row",
@@ -21,8 +25,9 @@ export const Home = () => {
           }}
         >
           {boxes.map((_, index) => (
-            <View
-              key={index}
+            <TouchableOpacity
+              key={`box-${index}`}
+              onPress={() => router.push("/features/Customer/InfoMarket")}
               style={{
                 width: 110,
                 height: 100,
@@ -32,22 +37,42 @@ export const Home = () => {
                 marginHorizontal: 10,
                 justifyContent: "center",
                 alignItems: "center",
+                overflow: "hidden",
               }}
-            />
+            >
+              {index === 0 ? (
+                <Image
+                  source={require("../../../../assets/Logo/Ped.jpg")}
+                  style={{ width: "100%", height: "100%", resizeMode: "cover" }}
+                />
+              ) : null}
+            </TouchableOpacity>
           ))}
         </View>
         <View style={{ flex: 1, alignItems: "center" }}>
           <View
             style={{
               width: "90%",
-              height: 70,
+              height: 50,
               backgroundColor: "#D9D9D9",
               marginTop: 20,
               borderRadius: 20,
-              justifyContent: "center",
+              flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
+              paddingHorizontal: 20,
             }}
-          ></View>
+          >
+            <View style={{}}>
+              <Text>Wallet Balance</Text>
+            </View>
+            <View style={{}}>
+              <Text style={{ textAlign: "left" }}>
+                {" "}
+                {balnace.toFixed(2)} THB
+              </Text>
+            </View>
+          </View>
           <View
             style={{ flexDirection: "row", justifyContent: "space-around" }}
           >
@@ -57,7 +82,7 @@ export const Home = () => {
                 height: 200,
                 backgroundColor: "#D9D9D9",
                 marginTop: 20,
-                marginHorizontal:12,
+                marginHorizontal: 12,
                 borderRadius: 20,
                 justifyContent: "center",
                 alignItems: "center",
@@ -70,7 +95,7 @@ export const Home = () => {
                 backgroundColor: "#D9D9D9",
                 marginTop: 20,
                 borderRadius: 20,
-                marginHorizontal:12,
+                marginHorizontal: 12,
                 justifyContent: "center",
                 alignItems: "center",
               }}
@@ -78,9 +103,6 @@ export const Home = () => {
           </View>
         </View>
       </View>
-      <View style={{ flex: 1 }}>
-        <BottomBar />
-      </View>
-    </View>
+    </SafeAreaView>
   );
-};
+}

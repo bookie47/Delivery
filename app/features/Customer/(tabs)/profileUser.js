@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomBar } from '../../../components/bottomBar'
+import { BottomBar } from '../../../../components/bottomBar'
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -8,7 +8,7 @@ import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 
 export const Profile = () =>{
-    const uri = require("../../../assets/profile/default.jpg");
+    const uri = require("../../../../assets/profile/default.jpg");
     return(
         <SafeAreaView style={{flex:1, backgroundColor:'#F6F6F6'}}>
             <View style={{flex:1, backgroundColor:'#00B14F'}}>

@@ -1,4 +1,4 @@
-import { View ,Text} from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -11,24 +11,28 @@ export const BottomBar = () => {
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
-          justifyContent:'space-around',
-          backgroundColor:'#34656D'
-          
+          justifyContent: "space-around",
+          backgroundColor: "#34656D",
         }}
       >
-          <View style={{alignItems:'center'}}>
+        <TouchableOpacity>
+          <View style={{ alignItems: "center" }}>
             <AntDesign name="home" size={30} color={"white"} />
-            <Text style={{color:'white'}}>Home</Text>
+            <Text style={{ color: "white" }}>Home</Text>
           </View>
-          <View style={{alignItems:'center'}}>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <View style={{ alignItems: "center" }}>
             <AntDesign name="history" size={30} color={"white"} />
-            <Text style={{color:'white'}} >History</Text>
+            <Text style={{ color: "white" }}>History</Text>
           </View>
-          <View style={{alignItems:'center'}}>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <View style={{ alignItems: "center" }}>
             <AntDesign name="menu" size={30} color={"white"} />
-            <Text style={{color:'white'}} >Menu</Text>
+            <Text style={{ color: "white" }}>Menu</Text>
           </View>
-      
+        </TouchableOpacity>
       </View>
     </View>
   );
