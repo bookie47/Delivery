@@ -1,9 +1,13 @@
 import { View, Image, Dimensions, StyleSheet, Text } from "react-native";
 
-export const BannerMarket = () => {
+export const BannerMarket = ({ shop }) => {
   const image = require("../assets/menu/images.jpg");
-  const logoMarket = require("../assets/Logo/fireRice.jpg");
   const { width } = Dimensions.get("window");
+
+  const logoMarket = shop && shop.logo ? { uri: shop.logo } : require("../assets/Logo/fireRice.jpg");
+  const shopName = shop && shop.name ? shop.name : "ร้านอาหารตามสั่ง";
+  const shopDescription = shop && shop.tag ? shop.tag : "ประตู 3 หลังม.เกษตร";
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -25,8 +29,8 @@ export const BannerMarket = () => {
         </View>
 
         <View style={{flex:2,paddingLeft:10}}>
-          <Text style={styles.shopName}>ร้านอาหารตามสั่ง</Text>
-          <Text style={styles.shopDescripton}>ประตู 3 หลังม.เกษตร </Text>
+          <Text style={styles.shopName}>{shopName}</Text>
+          <Text style={styles.shopDescripton}>{shopDescription}</Text>
         </View>
       </View>
     </View>
@@ -41,7 +45,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     position: "absolute",
-    top: 40,
+    top: 15,
     left: 20,
     right: 20,
     flexDirection: "row", // 🔑 แบ่งเป็นแนวนอน

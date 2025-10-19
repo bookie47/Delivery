@@ -1,17 +1,17 @@
-// app/features/Customer/_layout.js
+// app/features/Customer/(tabs)/_layout.js
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import TabBarAnimatedIcon from "../../../../components/TabBarAnimatedIcon";
 
 export default function CustomerLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#FA4A0C", // สี icon + label ตอน active
-        tabBarInactiveTintColor: "#ccc", // สีตอนยังไม่ active
+        tabBarActiveTintColor: "#FA4A0C",
+        tabBarInactiveTintColor: "#ccc",
         tabBarStyle: {
-          backgroundColor: "#ffffff", // พื้นหลัง tab bar
-          borderTopColor: "#ddd", // เส้นขอบบน
+          backgroundColor: "#ffffff",
+          borderTopColor: "#ddd",
           borderTopWidth: 1,
         },
       }}
@@ -20,8 +20,27 @@ export default function CustomerLayout() {
         name="Home"
         options={{
           tabBarLabel: "Home",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarAnimatedIcon
+              name="home"
+              size={22}
+              color={color}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="wallet"
+        options={{
+          tabBarLabel: "Wallet",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarAnimatedIcon
+              name="wallet"
+              size={22}
+              color={color}
+              focused={focused}
+            />
           ),
         }}
       />
@@ -29,8 +48,13 @@ export default function CustomerLayout() {
         name="orderHistory"
         options={{
           tabBarLabel: "Order",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="list" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarAnimatedIcon
+              name="list"
+              size={22}
+              color={color}
+              focused={focused}
+            />
           ),
         }}
       />
@@ -38,8 +62,13 @@ export default function CustomerLayout() {
         name="menu"
         options={{
           tabBarLabel: "Menu",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="menu" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarAnimatedIcon
+              name="menu"
+              size={22}
+              color={color}
+              focused={focused}
+            />
           ),
         }}
       />

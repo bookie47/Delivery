@@ -2,25 +2,28 @@
   "expo": {
     "name": "Delivery",
     "slug": "Delivery",
+    "scheme": "delivery",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Logo/deli.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Logo/deli.png"
     }
   }
 }

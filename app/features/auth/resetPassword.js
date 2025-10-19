@@ -1,11 +1,15 @@
 import { View, Text, TextInput, Image, TouchableOpacity } from "react-native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 
 export default function ResetPassword() {
   const logo = require("../../../assets/Logo/forgot.png");
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <KeyboardAwareScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}
+    >
       <Image source={logo} style={{ width: 100, height: 100 }}></Image>
       <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 20 }}>
         Forgot your password?
@@ -50,6 +54,6 @@ export default function ResetPassword() {
           <Text>Back to Signin</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }

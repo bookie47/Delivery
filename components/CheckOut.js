@@ -1,10 +1,10 @@
 // CheckoutSheet.jsx
-import React, { useEffect, useRef } from "react";
-import { Modal, View, Text, Pressable, Animated } from "react-native";
+import React, { useEffect, useRef, useMemo } from "react";
+import { Modal, View, Text, Pressable, Animated, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function CheckoutSheet({ visible, onClose }) {
-  const SHEET_HEIGHT = 320;
+export default function CheckoutSheet({ visible, onClose, cart, shop, handleOrder }) {
+  const SHEET_HEIGHT = 400; // Increased height to accommodate cart items
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
 
@@ -38,6 +38,25 @@ export default function CheckoutSheet({ visible, onClose }) {
     }
   }, [visible]);
 
+  const cartItems = useMemo(() => {
+    if (!cart || !shop || !shop.menu) {
+      return [];
+    }
+    return Object.keys(cart).map(menuId => {
+      const menuItem = shop.menu.find(item => item.id === menuId);
+      const quantity = cart[menuId];
+      if (menuItem) {
+        return { ...menuItem, quantity };
+      }
+      return null;
+    }).filter(item => item !== null);
+  }, [cart, shop]);
+
+  const orderTotal = useMemo(() => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  }, [cartItems]);
+
+
   const colors = {
     primary: "#FA4A0C",
     bg: "#F2F2F2",
@@ -68,6 +87,7 @@ export default function CheckoutSheet({ visible, onClose }) {
 
         <Animated.View
           style={{
+            height: SHEET_HEIGHT,
             transform: [{ translateY }],
             backgroundColor: colors.bg,
             borderTopLeftRadius: 20,
@@ -96,8 +116,21 @@ export default function CheckoutSheet({ visible, onClose }) {
               marginBottom: 14,
             }}
           >
-            Top Up & Order
+            Your Order
           </Text>
+
+          <ScrollView style={{ flex: 1, marginBottom: 10 }}>
+            {cartItems.length > 0 ? cartItems.map(item => (
+              <View key={item.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                <Text style={{ color: colors.text, flex: 1 }} numberOfLines={1}>{item.name}</Text>
+                <Text style={{ color: colors.subText }}>x{item.quantity}</Text>
+                <Text style={{ color: colors.text, fontWeight: 'bold', width: 80, textAlign: 'right' }}>฿{(item.price * item.quantity).toFixed(2)}</Text>
+              </View>
+            )) : (
+              <Text style={{textAlign: 'center', color: colors.subText, paddingVertical: 20}}>Your cart is empty.</Text>
+            )}
+          </ScrollView>
+
 
           <View style={{ gap: 8, marginBottom: 18 }}>
             <Text style={{ color: colors.subText, fontSize: 14 }}>Method</Text>
@@ -151,25 +184,23 @@ export default function CheckoutSheet({ visible, onClose }) {
             <Text
               style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}
             >
-              ฿80.00
+              ฿{orderTotal.toFixed(2)}
             </Text>
           </View>
 
           <Pressable
-            onPress={() => {
-              onClose();
-              alert("Order Success");
-            }}
+            onPress={handleOrder}
             style={({ pressed }) => ({
-              backgroundColor: colors.primary,
+              backgroundColor: orderTotal > 0 ? colors.primary : colors.chip,
               opacity: pressed ? 0.9 : 1,
               paddingVertical: 14,
               borderRadius: 14,
               alignItems: "center",
             })}
+            disabled={orderTotal === 0}
           >
             <Text
-              style={{ color: colors.white, fontWeight: "700", fontSize: 16 }}
+              style={{ color: orderTotal > 0 ? colors.white : colors.subText, fontWeight: "700", fontSize: 16 }}
             >
               สั่งซื้อ
             </Text>
