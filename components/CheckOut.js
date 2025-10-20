@@ -1,15 +1,33 @@
 // CheckoutSheet.jsx
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { Modal, View, Text, Pressable, Animated, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { auth, db } from "../firebase/connect";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function CheckoutSheet({ visible, onClose, cart, shop, handleOrder }) {
   const SHEET_HEIGHT = 400; // Increased height to accommodate cart items
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     if (visible) {
+      const fetchBalance = async () => {
+        const user = auth.currentUser;
+        if (user) {
+          try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+              setBalance(userDoc.data().wallet || 0);
+            }
+          } catch (error) {
+            console.error("Failed to fetch balance:", error);
+          }
+        }
+      };
+      fetchBalance();
+      
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: 0,
@@ -156,18 +174,9 @@ export default function CheckoutSheet({ visible, onClose, cart, shop, handleOrde
                 </Text>
               </View>
 
-              <View
-                style={{
-                  backgroundColor: colors.chip,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 999,
-                }}
-              >
-                <Text style={{ fontSize: 12, color: colors.text }}>
-                  Default
-                </Text>
-              </View>
+              <Text style={{ fontSize: 14, color: colors.text, fontWeight: '600' }}>
+                ฿{balance.toFixed(2)}
+              </Text>
             </View>
           </View>
 

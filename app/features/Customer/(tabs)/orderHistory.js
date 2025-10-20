@@ -69,7 +69,16 @@ const OrderList = ({
         : item.status || "Unknown";
 
     return (
-      <TouchableOpacity style={styles.orderCard} activeOpacity={0.9}>
+      <TouchableOpacity
+        style={styles.orderCard}
+        activeOpacity={0.9}
+        onPress={() =>
+          router.push({
+            pathname: "/features/Customer/OrderDetail",
+            params: { orderId: item.id },
+          })
+        }
+      >
         <View style={styles.orderHeader}>
           <View style={styles.shopInfo}>
             <Image
@@ -122,13 +131,14 @@ const OrderList = ({
             <TouchableOpacity
               style={styles.viewShopLink}
               onPress={() =>
-                item.shopId &&
-                router.push(`/features/Customer/InfoMarket?id=${item.shopId}`)
+                router.push({
+                  pathname: "/features/Customer/OrderDetail",
+                  params: { orderId: item.id },
+                })
               }
-              disabled={!item.shopId}
             >
-              <Text style={styles.viewShopText}>View shop</Text>
-              <Ionicons name="chevron-forward" size={14} color="#6B7280" />
+              <Text style={styles.viewShopText}>View Details</Text>
+              <Ionicons name="chevron-forward" size={12} color="#6B7280" />
             </TouchableOpacity>
           </View>
         </View>
