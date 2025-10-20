@@ -127,6 +127,14 @@ const stores = [
         { id: "menu_003", name: "ข้าวผัด", price: 50, category: "อาหารตามสั่ง" },
     ]
   },
+  {
+    id: 15, name: "ครัวแล้วแต่ปุ๊", rate: 5.0, tag: "อาหาร" , logo:'https://deliverystore.blob.core.windows.net/store15/%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B8%A7%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B9%81%E0%B8%95%E0%B9%88%E0%B8%9B%E0%B8%B8%E0%B9%8A.jpg',
+    menu: [
+        { id: "menu_001", name: "กะเพราหมูสับ", price: 50, category: "อาหารตามสั่ง" },
+        { id: "menu_002", name: "ไข่เจียว", price: 40, category: "อาหารตามสั่ง" },
+        { id: "menu_003", name: "ข้าวผัด", price: 50, category: "อาหารตามสั่ง" },
+    ]
+  },
 ];
 
 // เพิ่มข้อมูลทั้งหมดเข้า Firestore

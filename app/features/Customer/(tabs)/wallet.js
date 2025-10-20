@@ -32,12 +32,15 @@ export default function Wallet() {
   const [shops, setShops] = useState({});
   const [loading, setLoading] = useState(true);
 
+  
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u || null);
       if (!u) {
         setBalance(0);
-        setOrders([]);
+        setActivities([]);
+        setShops({});
         setLoading(false);
         return;
       }
@@ -98,10 +101,10 @@ export default function Wallet() {
     if (item.type === 'topup') {
       return (
         <View style={styles.txItem}>
-          <View style={[styles.txLogo, { backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center' }]}> 
+          <View style={[styles.txLogo, { backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center' }]}>
             <Ionicons name="wallet" size={18} color="#92400E" />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={styles.txDetails}>
             <Text numberOfLines={1} style={styles.txTitle}>Top Up</Text>
             <Text style={styles.txSub}>{new Date(item.createdAt?.toDate?.()).toLocaleString?.() || ''}</Text>
           </View>
@@ -118,7 +121,7 @@ export default function Wallet() {
     return (
       <View style={styles.txItem}>
         <Image source={logoSrc} style={styles.txLogo} />
-        <View style={{ flex: 1 }}>
+        <View style={styles.txDetails}>
           <Text numberOfLines={1} style={styles.txTitle}>{shop?.name || 'Shop'}</Text>
           <Text style={styles.txSub}>{new Date(item.createdAt?.toDate?.()).toLocaleString?.() || ''}</Text>
         </View>
@@ -131,52 +134,50 @@ export default function Wallet() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F6F6F6' }}>
-      <FocusFade style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Wallet</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.hero}>
+        <View>
+          <Text style={styles.heroTitle}>Wallet</Text>
+          <Text style={styles.heroSubtitle}>Track your balance & activity</Text>
         </View>
-
-        <View style={styles.container}>
+        <TouchableOpacity style={styles.heroProfile} onPress={() => router.push('/features/Customer/TopUp')}>
+          <Ionicons name="add" size={18} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      <FocusFade style={{ flex: 1 }}>
+        <View style={styles.content}>
           <View style={styles.balanceCard}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="wallet" size={24} color="#FA4A0C" />
+            <View style={{ flex: 1 }}>
               <Text style={styles.balanceLabel}>Current Balance</Text>
+              {loading ? (
+                <SkeletonLine width={'60%'} height={28} style={{ marginTop: 10, backgroundColor: 'rgba(255,255,255,0.25)' }} />
+              ) : (
+                <Text style={styles.balanceValue}>{balance.toFixed(2)} THB</Text>
+              )}
             </View>
-            {loading ? (
-              <SkeletonLine width={'60%'} height={28} style={{ marginTop: 10 }} />
-            ) : (
-              <Text style={styles.balanceValue}>{balance.toFixed(2)} THB</Text>
-            )}
-
-            <View style={styles.actions}>
-              <TouchableOpacity style={[styles.button, { backgroundColor: '#FA4A0C' }]} onPress={() => router.push('/features/Customer/TopUp')}>
-                <Ionicons name="add" size={18} color="white" />
-                <Text style={styles.buttonText}>Top Up</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: '#E5E7EB' }]} disabled>
-                <Ionicons name="download" size={18} color="#6B7280" />
-                <Text style={[styles.buttonText, { color: '#6B7280' }]}>Withdraw</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: '#111827' }]} onPress={() => router.push('/features/Customer/(tabs)/orderHistory')}>
-                <Ionicons name="time-outline" size={18} color="white" />
-                <Text style={styles.buttonText}>History</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.balanceAction} onPress={() => router.push('/features/Customer/TopUp')}>
+              <Ionicons name="add-circle-outline" size={20} color="#FA4A0C" />
+              <Text style={styles.balanceActionText}>Top Up</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
+            <TouchableOpacity onPress={() => router.push('/features/Customer/(tabs)/orderHistory')}>
+              <Text style={styles.sectionLink}>View all</Text>
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.listWrapper}>
+          <View style={styles.listCard}>
             {loading ? (
-              <View style={{ padding: 12 }}>
+              <View style={styles.skeletonList}>
                 {[...Array(4)].map((_, i) => (
-                  <View key={i} style={[styles.txItem, { backgroundColor: 'white' }] }>
-                    <SkeletonLine width={40} height={40} style={{ borderRadius: 20 }} />
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <SkeletonLine width={'70%'} />
-                      <SkeletonLine width={'40%'} style={{ marginTop: 8 }} />
+                  <View key={i} style={[styles.txItem, styles.skeletonRow]}>
+                    <SkeletonLine width={40} height={40} style={{ borderRadius: 20, backgroundColor: '#E5E7EB' }} />
+                    <View style={styles.txDetails}>
+                      <SkeletonLine width={'70%'} style={{ backgroundColor: '#E5E7EB' }} />
+                      <SkeletonLine width={'40%'} style={{ marginTop: 8, backgroundColor: '#E5E7EB' }} />
                     </View>
-                    <SkeletonLine width={80} />
+                    <SkeletonLine width={80} style={{ backgroundColor: '#E5E7EB' }} />
                   </View>
                 ))}
               </View>
@@ -185,7 +186,8 @@ export default function Wallet() {
                 data={activities.slice(0, 10)}
                 keyExtractor={(it) => it.id}
                 renderItem={renderItem}
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                ItemSeparatorComponent={() => <View style={{ flex:1 }} />}
+                contentContainerStyle={activities.length === 0 ? styles.emptyListContent : styles.listContent}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#6B7280', padding: 16 }}>No recent activity</Text>}
               />
             )}
@@ -197,82 +199,143 @@ export default function Wallet() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: '#FA4A0C',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#ffffffff',
+  },
+  hero: {
+    backgroundColor: '#FA4A0C',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  heroTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  heroSubtitle: {
+    marginTop: 6,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  heroProfile: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 25,
+    gap: 20,
   },
   balanceCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: '#111827',
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
   balanceLabel: {
-    marginLeft: 8,
-    color: '#374151',
-    fontWeight: '600',
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   balanceValue: {
-    marginTop: 8,
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    marginTop: 6,
+    color: '#fff',
+    fontSize: 30,
+    fontWeight: '700',
   },
-  actions: {
-    marginTop: 12,
-    flexDirection: 'row',
-    gap: 10,
-  },
-  button: {
+  balanceAction: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 999,
+    backgroundColor: '#fff',
   },
-  buttonText: {
-    color: 'white',
+  balanceActionText: {
+    color: '#FA4A0C',
     fontWeight: '700',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  actionTile: {
+    flexBasis: '48%',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  actionTileDisabled: {
+    opacity: 0.5,
+  },
+  actionLabel: {
+    fontWeight: '600',
+    color: '#111827',
+  },
+  actionLabelMuted: {
+    color: '#6B7280',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionTitle: {
-    marginTop: 20,
-    marginBottom: 8,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#374151',
+    color: '#111827',
   },
-  listWrapper: {
+  sectionLink: {
+    color: '#2563EB',
+    fontWeight: '600',
+  },
+  listCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
     overflow: 'hidden',
   },
   txItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: 'transparent',
   },
   txLogo: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  txDetails: {
+    flex: 1,
   },
   txTitle: {
     color: '#111827',
@@ -292,5 +355,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
+  },
+  skeletonList: {
+    padding: 16,
+    gap: 12,
+  },
+  skeletonRow: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+  },
+  listContent: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  emptyListContent: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
 });

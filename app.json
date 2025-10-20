@@ -5,7 +5,7 @@
     "scheme": "delivery",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Logo/deli.png",
+    "icon": "./assets/Logo/fast-shipping.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

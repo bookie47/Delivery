@@ -1,170 +1,360 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  StyleSheet,
   View,
   Text,
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
   Alert,
-  Platform,
 } from "react-native";
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../../firebase/connect";
 import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../../firebase/connect";
+import KeyboardAwareScreen from "../../../components/KeyboardAwareScreen";
+import FocusFade from "../../../components/FocusFade";
 
 export default function SignUp() {
-  const uri = require("../../../assets/Logo/deli.png");
+  const logo = require("../../../assets/Logo/fast-shipping.png");
   const [name, setName] = useState("");
   const [surename, setSurename] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignUp = async () => {
     if (!name || !surename || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all required fields.");
+      setError("Please fill in all required fields.");
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setError("Passwords do not match. Please try again.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password should be at least 6 characters long.");
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
+      setError("");
+      setLoading(true);
+      const cred = await createUserWithEmailAndPassword(
         auth,
-        email,
+        email.trim(),
         password
       );
-      const user = userCredential.user;
-      console.log("Created account for:", user.email);
-
-      // Save user data to Firestore
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, {
-        name: name,
-        surename: surename,
+      const user = cred.user;
+      await setDoc(doc(db, "users", user.uid), {
+        name,
+        surename,
         email: user.email,
         wallet: 0,
       });
 
-      console.log("User data saved to Firestore");
       Alert.alert("Success", "Account created successfully!", [
         { text: "OK", onPress: () => router.push("/features/auth/signIn") },
       ]);
-    } catch (error) {
-      const errorMessage = error.message;
-      Alert.alert("Sign Up Failed", errorMessage);
+    } catch (err) {
+      const message =
+        err?.message?.replace("Firebase: ", "") ||
+        "Unable to create your account right now.";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ flexGrow: 1 }}
-    >
-        <View
-          style={{
-            flex: 2,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingTop: 20,
-          }}
-        >
-          <Image source={uri} style={{ width: 200, height: 200 }} />
-        </View>
-        <View style={{ flex: 4, alignItems: "center" }}>
-          <View style={{ width: "80%" }}>
-            <Text style={{ fontSize: 24 }}>Name</Text>
-            <TextInput
-              style={{
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                marginBottom: 20,
-                borderRadius: 15,
-                paddingLeft: 10,
-              }}
-              onChangeText={setName}
-              value={name}
-            />
-            <Text style={{ fontSize: 24 }}>Surename</Text>
-            <TextInput
-              style={{
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                marginBottom: 20,
-                borderRadius: 15,
-                paddingLeft: 10,
-              }}
-              onChangeText={setSurename}
-              value={surename}
-            />
-            <Text style={{ fontSize: 24 }}>Email</Text>
-            <TextInput
-              style={{
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                marginBottom: 20,
-                borderRadius: 15,
-                paddingLeft: 10,
-              }}
-              onChangeText={setEmail}
-              value={email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <Text style={{ fontSize: 24 }}>Password</Text>
-            <TextInput
-              style={{
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                marginBottom: 20,
-                borderRadius: 15,
-                paddingLeft: 10,
-              }}
-              onChangeText={setPassword}
-              value={password}
-              secureTextEntry
-            />
-            <Text style={{ fontSize: 24 }}>Confirm Password</Text>
-            <TextInput
-              style={{
-                height: 40,
-                borderColor: "gray",
-                borderWidth: 1,
-                marginBottom: 20,
-                borderRadius: 15,
-                paddingLeft: 10,
-              }}
-              onChangeText={setConfirmPassword}
-              value={confirmPassword}
-              secureTextEntry
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F6F6F6" }}>
+      <View style={styles.hero}>
+        <View style={styles.heroContent}>
+          <View style={styles.heroLogo}>
+            <Image
+              source={logo}
+              style={styles.heroImage}
+              resizeMode="contain"
             />
           </View>
-
-          <TouchableOpacity
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              width: 150,
-              height: 50,
-              borderRadius: 20,
-            backgroundColor: "#FA4A0C",
-              marginTop: 10,
-            }}
-            onPress={handleSignUp}
-          >
-            <Text style={{ fontSize: 32, fontWeight: "800", color: "white" }}>
-              Sign Up
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.heroTitle}>Create your account</Text>
+          <Text style={styles.heroSubtitle}>
+            Join us and start ordering in moments.
+          </Text>
         </View>
-      </KeyboardAwareScrollView>
+      </View>
+      <KeyboardAwareScreen contentContainerStyle={{ flexGrow: 1 }}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <FocusFade style={{ flex: 1 }}>
+            <View style={styles.container}>
+              <View style={styles.formCard}>
+                <Text style={styles.sectionTitle}>Personal Information</Text>
+                <View style={styles.inputRow}>
+                  <Ionicons name="person-outline" size={18} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="First name"
+                    placeholderTextColor="#9CA3AF"
+                    value={name}
+                    onChangeText={setName}
+                    autoComplete="name-given"
+                  />
+                </View>
+                <View style={styles.inputRow}>
+                  <Ionicons name="person" size={18} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Surname"
+                    placeholderTextColor="#9CA3AF"
+                    value={surename}
+                    onChangeText={setSurename}
+                    autoComplete="name-family"
+                  />
+                </View>
+                <View style={styles.inputRow}>
+                  <Ionicons name="mail-outline" size={18} color="#6B7280" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email address"
+                    placeholderTextColor="#9CA3AF"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                </View>
+                <View style={styles.inputRow}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={18}
+                    color="#6B7280"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#9CA3AF"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoComplete="password-new"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword((prev) => !prev)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={18}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.inputRow}>
+                  <Ionicons
+                    name="lock-open-outline"
+                    size={18}
+                    color="#6B7280"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm password"
+                    placeholderTextColor="#9CA3AF"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    autoComplete="password-new"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowConfirmPassword((prev) => !prev)}
+                  >
+                    <Ionicons
+                      name={
+                        showConfirmPassword ? "eye-off-outline" : "eye-outline"
+                      }
+                      size={18}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                <TouchableOpacity
+                  style={[
+                    styles.primaryButton,
+                    loading && styles.primaryButtonDisabled,
+                  ]}
+                  onPress={handleSignUp}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="person-circle-outline"
+                        size={18}
+                        color="white"
+                      />
+                      <Text style={styles.primaryButtonText}>
+                        Create Account
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+              <View style={styles.secondaryCard}>
+                <Text style={styles.secondaryText}>
+                  Already have an account?
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push("/features/auth/signIn")}
+                  style={styles.secondaryAction}
+                >
+                  <Ionicons name="log-in-outline" size={18} color="#FA4A0C" />
+                  <Text style={styles.secondaryLink}>Sign in</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </FocusFade>
+        </TouchableWithoutFeedback>
+      </KeyboardAwareScreen>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  hero: {
+    backgroundColor: "#FA4A0C",
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 24,
+  },
+  heroContent: {
+    alignItems: "center",
+  },
+  heroLogo: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 150,
+    height: 150,
+    backgroundColor: "white",
+    borderRadius: 40,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  heroImage: {
+    width: 110,
+    height: 110,
+  },
+  heroTitle: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "700",
+    marginTop: 12,
+  },
+  heroSubtitle: {
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    gap: 16,
+  },
+  formCard: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 16,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
+    backgroundColor: "#F9FAFB",
+  },
+  input: {
+    flex: 1,
+    color: "#111827",
+    fontSize: 15,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  primaryButton: {
+    marginTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 999,
+    backgroundColor: "#FA4A0C",
+  },
+  primaryButtonDisabled: {
+    opacity: 0.75,
+  },
+  primaryButtonText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  secondaryCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  secondaryText: {
+    color: "#6B7280",
+    fontWeight: "600",
+  },
+  secondaryAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  secondaryLink: {
+    color: "#FA4A0C",
+    fontWeight: "700",
+  },
+});
