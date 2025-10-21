@@ -67,6 +67,9 @@ const OrderList = ({
         : item.status === "pending"
         ? "Preparing"
         : item.status || "Unknown";
+    const orderNumberLabel =
+      item.orderNumber ||
+      (item.id ? `#${String(item.id).slice(-6).toUpperCase()}` : null);
 
     return (
       <TouchableOpacity
@@ -89,6 +92,11 @@ const OrderList = ({
               <Text numberOfLines={1} style={styles.shopName}>
                 {shop.name}
               </Text>
+              {!!orderNumberLabel && (
+                <Text style={styles.orderNumberLabel}>
+                  {orderNumberLabel}
+                </Text>
+              )}
               <Text style={styles.orderTimestamp}>
                 {createdDate ? createdDate.toLocaleString() : ""}
               </Text>
@@ -788,6 +796,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#111827",
+  },
+  orderNumberLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#4B5563",
   },
   orderTimestamp: {
     color: "#9CA3AF",

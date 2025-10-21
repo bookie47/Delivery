@@ -136,13 +136,16 @@ export default function InfoMarket() {
     });
 
     const orderRef = doc(collection(db, "orders"));
+    const orderNumber = `#${orderRef.id.slice(-6).toUpperCase()}`;
+    const createdAt = new Date();
     const newOrder = {
       userId: user.uid,
       shopId: id,
       items: cart,
       total: orderTotal,
-      createdAt: new Date(),
+      createdAt,
       status: "pending",
+      orderNumber,
     };
     batch.set(orderRef, newOrder);
 
@@ -152,13 +155,14 @@ export default function InfoMarket() {
         JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
       pendingOrders.push({
         orderId: orderRef.id,
-        createdAt: newOrder.createdAt,
+        createdAt,
+        orderNumber,
       });
       await AsyncStorage.setItem(
         "pendingOrders",
         JSON.stringify(pendingOrders)
       );
-      Alert.alert("Success", "Order placed successfully!");
+      Alert.alert("Success", `Order placed successfully!\nOrder number: ${orderNumber}`);
       setCart({});
       setOrderPlaced(true);
     } catch (error) {

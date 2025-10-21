@@ -103,6 +103,7 @@ export default function OrderDetail() {
   const createdDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date();
   const statusColor = order.status === 'completed' ? '#16A34A' : '#F59E0B';
   const statusLabel = order.status === 'completed' ? 'Completed' : 'Preparing';
+  const orderNumberLabel = order.orderNumber || (order.id ? `#${String(order.id).slice(-6).toUpperCase()}` : null);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -118,6 +119,9 @@ export default function OrderDetail() {
             <Image source={shop?.logo ? { uri: shop.logo } : placeholder} style={styles.shopImage} />
             <View style={styles.shopInfo}>
               <Text style={styles.shopName}>{shop?.name || 'Shop'}</Text>
+              {!!orderNumberLabel && (
+                <Text style={styles.orderNumber}>{orderNumberLabel}</Text>
+              )}
               <Text style={styles.orderDate}>{createdDate.toLocaleString()}</Text>
             </View>
             <View style={[styles.statusChip, { backgroundColor: statusColor }]}>
@@ -199,6 +203,7 @@ const styles = StyleSheet.create({
   shopImage: { width: 50, height: 50, borderRadius: 10, backgroundColor: '#eee' },
   shopInfo: { flex: 1, marginLeft: 10, gap: 2 },
   shopName: { fontSize: 16, fontWeight: 'bold', color: '#222' },
+  orderNumber: { fontSize: 12, fontWeight: '600', color: '#4B5563' },
   orderDate: { fontSize: 12, color: '#666' },
   statusChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 15 },
   statusText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
