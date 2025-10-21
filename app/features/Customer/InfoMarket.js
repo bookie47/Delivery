@@ -17,7 +17,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { router, useLocalSearchParams } from "expo-router";
 import CheckoutSheet from "../../../components/CheckOut";
 import { db, auth } from "../../../firebase/connect";
-import { doc, getDoc, writeBatch, collection } from "firebase/firestore";
+import { doc, getDoc, collection, runTransaction } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const placeholder = require("../../../assets/profile/default.jpg");
@@ -120,52 +120,108 @@ export default function InfoMarket() {
       return;
     }
 
-    const orderTotal = totalPrice;
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists() || userDoc.data().wallet < orderTotal) {
-      Alert.alert("Error", "Insufficient funds.");
+    if (!id) {
+      Alert.alert("Error", "Shop information is missing.");
       return;
     }
 
-    const batch = writeBatch(db);
+    if (!totalItems) {
+      Alert.alert("Cart Empty", "Please add menu items before placing an order.");
+      return;
+    }
 
-    batch.update(userDocRef, {
-      wallet: userDoc.data().wallet - orderTotal,
-    });
-
+    const orderTotal = Number(totalPrice || 0);
+    const userDocRef = doc(db, "users", user.uid);
+    const counterDocRef = doc(db, "shopOrderCounters", String(id));
     const orderRef = doc(collection(db, "orders"));
-    const orderNumber = `#${orderRef.id.slice(-6).toUpperCase()}`;
     const createdAt = new Date();
-    const newOrder = {
-      userId: user.uid,
-      shopId: id,
-      items: cart,
-      total: orderTotal,
-      createdAt,
-      status: "pending",
-      orderNumber,
-    };
-    batch.set(orderRef, newOrder);
 
     try {
-      await batch.commit();
+      const { orderNumber, shopOrderNumber } = await runTransaction(
+        db,
+        async (transaction) => {
+          const userSnapshot = await transaction.get(userDocRef);
+          if (!userSnapshot.exists()) {
+            throw new Error("USER_NOT_FOUND");
+          }
+
+          const walletBalance = Number(userSnapshot.data().wallet || 0);
+          if (walletBalance < orderTotal) {
+            throw new Error("INSUFFICIENT_FUNDS");
+          }
+
+          const counterSnapshot = await transaction.get(counterDocRef);
+          const currentOrderNumber = counterSnapshot.exists()
+            ? Number(counterSnapshot.data().lastOrderNumber || 0)
+            : 0;
+          const nextOrderNumber = currentOrderNumber + 1;
+          const paddedOrderNumber = `#${String(nextOrderNumber).padStart(
+            3,
+            "0"
+          )}`;
+
+          transaction.update(userDocRef, {
+            wallet: walletBalance - orderTotal,
+          });
+
+          transaction.set(
+            counterDocRef,
+            {
+              lastOrderNumber: nextOrderNumber,
+              updatedAt: createdAt,
+            },
+            { merge: true }
+          );
+
+          transaction.set(orderRef, {
+            userId: user.uid,
+            shopId: id,
+            items: cart,
+            total: orderTotal,
+            createdAt,
+            status: "pending",
+            orderNumber: paddedOrderNumber,
+            shopOrderNumber: nextOrderNumber,
+          });
+
+          return {
+            orderNumber: paddedOrderNumber,
+            shopOrderNumber: nextOrderNumber,
+          };
+        }
+      );
+
       const pendingOrders =
         JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
       pendingOrders.push({
         orderId: orderRef.id,
         createdAt,
         orderNumber,
+        shopOrderNumber,
+        shopId: id,
       });
       await AsyncStorage.setItem(
         "pendingOrders",
         JSON.stringify(pendingOrders)
       );
-      Alert.alert("Success", `Order placed successfully!\nOrder number: ${orderNumber}`);
+      Alert.alert(
+        "Success",
+        `Order placed successfully!\nShop order number: ${orderNumber}`
+      );
       setCart({});
       setOrderPlaced(true);
     } catch (error) {
+      if (error.message === "INSUFFICIENT_FUNDS") {
+        Alert.alert("Error", "Insufficient funds.");
+        return;
+      }
+      if (error.message === "USER_NOT_FOUND") {
+        Alert.alert(
+          "Error",
+          "Unable to locate your account. Please try again."
+        );
+        return;
+      }
       console.error("Error placing order: ", error);
       Alert.alert("Error", "Failed to place order.");
     }

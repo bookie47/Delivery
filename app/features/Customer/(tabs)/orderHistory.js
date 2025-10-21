@@ -68,8 +68,10 @@ const OrderList = ({
         ? "Preparing"
         : item.status || "Unknown";
     const orderNumberLabel =
-      item.orderNumber ||
-      (item.id ? `#${String(item.id).slice(-6).toUpperCase()}` : null);
+      item?.shopOrderNumber != null
+        ? `#${String(item.shopOrderNumber).padStart(3, "0")}`
+        : item?.orderNumber ||
+          (item?.id ? `#${String(item.id).slice(-6).toUpperCase()}` : null);
 
     return (
       <TouchableOpacity

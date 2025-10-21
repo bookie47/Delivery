@@ -103,7 +103,11 @@ export default function OrderDetail() {
   const createdDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date();
   const statusColor = order.status === 'completed' ? '#16A34A' : '#F59E0B';
   const statusLabel = order.status === 'completed' ? 'Completed' : 'Preparing';
-  const orderNumberLabel = order.orderNumber || (order.id ? `#${String(order.id).slice(-6).toUpperCase()}` : null);
+  const orderNumberLabel =
+    order?.shopOrderNumber != null
+      ? `#${String(order.shopOrderNumber).padStart(3, "0")}`
+      : order?.orderNumber ||
+        (order?.id ? `#${String(order.id).slice(-6).toUpperCase()}` : null);
 
   return (
     <SafeAreaView style={styles.container}>
