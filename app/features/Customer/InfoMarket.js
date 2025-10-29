@@ -284,8 +284,12 @@ export default function InfoMarket() {
               shop.menu.map((item) => {
                 const quantity = cart[item.id] || 0;
                 const displayPrice = Number(item.price || 0).toFixed(2);
-                const imageSource = item.imageUrl
+                const imageSource = item?.uri
+                  ? { uri: item.uri }
+                  : item?.imageUrl
                   ? { uri: item.imageUrl }
+                  : shop?.logo
+                  ? { uri: shop.logo }
                   : placeholder;
                 return (
                   <View key={item.id} style={styles.menuCardWrapper}>
