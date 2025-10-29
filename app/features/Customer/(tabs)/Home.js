@@ -198,8 +198,8 @@ export default function Home() {
 
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Popular Stores</Text>
-              <TouchableOpacity onPress={() => router.push('/features/Customer/(tabs)/orderHistory')}>
-                <Text style={styles.sectionLink}>Recent orders</Text>
+              <TouchableOpacity onPress={() => router.push('/features/Customer/AllStores')}>
+                <Text style={styles.sectionLink}>All Store</Text>
               </TouchableOpacity>
             </View>
 

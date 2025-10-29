@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -27,6 +33,45 @@ import FocusFade from "../../../../components/FocusFade";
 
 const placeholder = require("../../../../assets/profile/default.jpg");
 
+const COUNTDOWN_SECONDS = 60;
+const WAITING_STATUSES = new Set([
+  "pending",
+  "waiting",
+  "awaiting",
+  "awaiting_confirmation",
+  "requested",
+]);
+const ACCEPTED_STATUSES = new Set([
+  "accepted",
+  "accept",
+  "preparing",
+  "in_progress",
+]);
+const COMPLETED_STATUSES = new Set([
+  "completed",
+  "complete",
+  "done",
+  "finished",
+]);
+const CANCELLED_STATUSES = new Set([
+  "cancelled",
+  "canceled",
+  "declined",
+  "decline",
+  "rejected",
+  "cancelled_by_shop",
+  "canceled_by_shop",
+]);
+
+const normalizeStatus = (status) => (status || "").toLowerCase();
+const isWaitingStatus = (status) => WAITING_STATUSES.has(normalizeStatus(status));
+const isAcceptedStatus = (status) =>
+  ACCEPTED_STATUSES.has(normalizeStatus(status));
+const isCompletedStatus = (status) =>
+  COMPLETED_STATUSES.has(normalizeStatus(status));
+const isCancelledStatus = (status) =>
+  CANCELLED_STATUSES.has(normalizeStatus(status));
+
 const OrderList = ({
   orders,
   shops,
@@ -44,10 +89,25 @@ const OrderList = ({
       rawCreatedAt instanceof Date && !Number.isNaN(rawCreatedAt.getTime())
         ? rawCreatedAt
         : null;
-    const createdMillis = createdDate ? createdDate.getTime() : 0;
-    const remainingTime = createdDate
-      ? 60 - (Date.now() - createdMillis) / 1000
-      : 0;
+    const timerStart =
+      item.timerStartedAt?.toDate?.() ??
+      (item.timerStartedAt ? new Date(item.timerStartedAt) : null) ??
+      item.acceptedAt?.toDate?.() ??
+      (item.acceptedAt ? new Date(item.acceptedAt) : null);
+    const status = normalizeStatus(item.status);
+    const waiting = isWaitingStatus(status);
+    const accepted = isAcceptedStatus(status);
+    const completed = isCompletedStatus(status);
+    const cancelled = isCancelledStatus(status);
+    let remainingTime = 0;
+    if (accepted) {
+      if (timerStart instanceof Date && !Number.isNaN(timerStart.getTime())) {
+        const elapsed = (Date.now() - timerStart.getTime()) / 1000;
+        remainingTime = Math.max(0, COUNTDOWN_SECONDS - elapsed);
+      } else {
+        remainingTime = COUNTDOWN_SECONDS;
+      }
+    }
     const itemCount = item?.items
       ? Object.values(item.items).reduce(
           (acc, val) => acc + Number(val || 0),
@@ -55,23 +115,34 @@ const OrderList = ({
         )
       : 0;
     const totalDisplay = Number(item.total || 0).toFixed(2);
-    const statusColor =
-      item.status === "completed"
-        ? "#16A34A"
-        : item.status === "pending"
-        ? "#F59E0B"
-        : "#4B5563";
-    const statusLabel =
-      item.status === "completed"
-        ? "Completed"
-        : item.status === "pending"
-        ? "Preparing"
-        : item.status || "Unknown";
+    let statusColor = "#4B5563";
+    let statusLabel = item.status || "Unknown";
+    if (waiting) {
+      statusColor = "#F59E0B";
+      statusLabel = "Awaiting confirmation";
+    } else if (accepted) {
+      statusColor = "#2563EB";
+      statusLabel = "Accepted";
+    } else if (completed) {
+      statusColor = "#16A34A";
+      statusLabel = "Completed";
+    } else if (cancelled) {
+      statusColor = "#DC2626";
+      statusLabel =
+        status === "declined" || status === "decline"
+          ? "Declined"
+          : "Cancelled";
+    }
     const orderNumberLabel =
       item?.shopOrderNumber != null
         ? `#${String(item.shopOrderNumber).padStart(3, "0")}`
         : item?.orderNumber ||
           (item?.id ? `#${String(item.id).slice(-6).toUpperCase()}` : null);
+    const timerStartKey =
+      timerStart instanceof Date && !Number.isNaN(timerStart.getTime())
+        ? timerStart.getTime()
+        : "fallback";
+    const countdownSeconds = Math.max(0, Math.ceil(remainingTime));
 
     return (
       <TouchableOpacity
@@ -119,10 +190,20 @@ const OrderList = ({
           </View>
 
           <View style={styles.orderFooter}>
-            {item.status === "pending" && remainingTime > 0 ? (
+            {accepted && remainingTime > 0 ? (
               <View style={styles.countdownWrapper}>
-                <CircularCountdown duration={remainingTime} />
-                <Text style={styles.countdownText}>Preparing your order</Text>
+                <CircularCountdown
+                  key={`${item.id}-${timerStartKey}`}
+                  duration={countdownSeconds}
+                />
+                <Text style={styles.countdownText}>
+                  Shop accepted your order
+                </Text>
+              </View>
+            ) : waiting ? (
+              <View style={styles.waitingWrapper}>
+                <Ionicons name="time-outline" size={14} color="#F59E0B" />
+                <Text style={styles.waitingText}>Waiting for shop reply</Text>
               </View>
             ) : (
               <TouchableOpacity
@@ -181,6 +262,73 @@ export default function OrderHistory() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("inProgress");
   const shopCacheRef = useRef({});
+  const timersRef = useRef({});
+
+  const syncPendingOrdersStorage = useCallback(async (orders) => {
+    try {
+      const storedRaw =
+        JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
+      const storedMap = new Map(
+        storedRaw.map((entry) => [entry.orderId, entry])
+      );
+      const nowIso = new Date().toISOString();
+      const updatedEntries = [];
+
+      orders.forEach((order) => {
+        const statusKey = normalizeStatus(order.status);
+        if (
+          !isWaitingStatus(statusKey) &&
+          !isAcceptedStatus(statusKey)
+        ) {
+          return;
+        }
+
+        const createdDate =
+          order.createdAt?.toDate?.() ??
+          (order.createdAt instanceof Date ? order.createdAt : null);
+        const existing =
+          storedMap.get(order.id) || {
+            orderId: order.id,
+            createdAt:
+              createdDate instanceof Date &&
+              !Number.isNaN(createdDate.getTime())
+                ? createdDate.toISOString()
+                : nowIso,
+            shopId: order.shopId ?? null,
+            orderNumber: order.orderNumber ?? null,
+            shopOrderNumber: order.shopOrderNumber ?? null,
+            acceptedAt: null,
+          };
+
+        if (isAcceptedStatus(statusKey)) {
+          const docAccepted =
+            order.timerStartedAt?.toDate?.() ??
+            (order.timerStartedAt ? new Date(order.timerStartedAt) : null) ??
+            order.acceptedAt?.toDate?.() ??
+            (order.acceptedAt ? new Date(order.acceptedAt) : null);
+          if (
+            docAccepted instanceof Date &&
+            !Number.isNaN(docAccepted.getTime())
+          ) {
+            existing.acceptedAt = docAccepted.toISOString();
+          } else if (!existing.acceptedAt) {
+            existing.acceptedAt = new Date().toISOString();
+          }
+        } else {
+          existing.acceptedAt = existing.acceptedAt ?? null;
+        }
+
+        updatedEntries.push(existing);
+      });
+
+      await AsyncStorage.setItem(
+        "pendingOrders",
+        JSON.stringify(updatedEntries)
+      );
+    } catch (error) {
+      console.error("Failed to sync pending orders cache:", error);
+    }
+  }, [syncPendingOrdersStorage]);
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -206,15 +354,33 @@ export default function OrderHistory() {
         return 0;
       };
 
-      const pending = ordersData
-        .filter((order) => order.status === "pending")
-        .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
-      const completed = ordersData
-        .filter((order) => order.status === "completed")
+      const activeOrders = ordersData
+        .filter((order) => {
+          const statusKey = normalizeStatus(order.status);
+          if (isCompletedStatus(statusKey) || isCancelledStatus(statusKey)) {
+            return false;
+          }
+          return (
+            isWaitingStatus(statusKey) || isAcceptedStatus(statusKey)
+          );
+        })
         .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
 
-      setInProgressOrders(pending);
-      setHistoryOrders(completed);
+      const historicalOrders = ordersData
+        .filter((order) => {
+          const statusKey = normalizeStatus(order.status);
+          if (isCompletedStatus(statusKey) || isCancelledStatus(statusKey)) {
+            return true;
+          }
+          return (
+            !isWaitingStatus(statusKey) && !isAcceptedStatus(statusKey)
+          );
+        })
+        .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+
+      setInProgressOrders(activeOrders);
+      setHistoryOrders(historicalOrders);
+      await syncPendingOrdersStorage(ordersData);
 
       const fetchShopData = async (shopId) => {
         const key = String(shopId || "");
@@ -233,60 +399,137 @@ export default function OrderHistory() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [syncPendingOrdersStorage]);
 
   useEffect(() => {
-    const checkPendingOrders = async () => {
-      let pendingOrders =
-        JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
-      const now = new Date();
+    let isActive = true;
 
-      for (const order of pendingOrders) {
-        const orderDocRef = doc(db, "orders", order.orderId);
-        const orderDoc = await getDoc(orderDocRef);
+    const managePendingOrderTimers = async () => {
+      try {
+        const stored =
+          JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
+        const activeMap = new Map(
+          inProgressOrders.map((order) => [order.id, order])
+        );
+        const updatedEntries = [];
+        const now = Date.now();
 
-        if (!orderDoc.exists()) {
-          pendingOrders = pendingOrders.filter(
-            (p) => p.orderId !== order.orderId
-          );
-          await AsyncStorage.setItem(
-            "pendingOrders",
-            JSON.stringify(pendingOrders)
-          );
-          continue;
+        for (const entry of stored) {
+          const order = activeMap.get(entry.orderId);
+          const statusKey = normalizeStatus(order?.status);
+
+          // Clear timers for orders no longer active
+          if (
+            !order ||
+            (!isWaitingStatus(statusKey) && !isAcceptedStatus(statusKey))
+          ) {
+            if (timersRef.current[entry.orderId]) {
+              clearTimeout(timersRef.current[entry.orderId]);
+              delete timersRef.current[entry.orderId];
+            }
+            continue;
+          }
+
+          if (!isAcceptedStatus(statusKey)) {
+            if (timersRef.current[entry.orderId]) {
+              clearTimeout(timersRef.current[entry.orderId]);
+              delete timersRef.current[entry.orderId];
+            }
+            updatedEntries.push({ ...entry, acceptedAt: null });
+            continue;
+          }
+
+          let acceptedAtIso = entry.acceptedAt;
+          const docTimerStart =
+            order.timerStartedAt?.toDate?.() ??
+            (order.timerStartedAt ? new Date(order.timerStartedAt) : null) ??
+            order.acceptedAt?.toDate?.() ??
+            (order.acceptedAt ? new Date(order.acceptedAt) : null);
+
+          if (!acceptedAtIso) {
+            const acceptedDate =
+              docTimerStart instanceof Date &&
+              !Number.isNaN(docTimerStart.getTime())
+                ? docTimerStart
+                : new Date();
+            acceptedAtIso = acceptedDate.toISOString();
+          }
+
+          const startMillis = new Date(acceptedAtIso).getTime();
+          if (Number.isNaN(startMillis)) {
+            continue;
+          }
+
+          const elapsed = now - startMillis;
+          const remaining = COUNTDOWN_SECONDS * 1000 - elapsed;
+
+          if (remaining <= 0) {
+            await updateDoc(doc(db, "orders", entry.orderId), {
+              status: "completed",
+            });
+            if (timersRef.current[entry.orderId]) {
+              clearTimeout(timersRef.current[entry.orderId]);
+              delete timersRef.current[entry.orderId];
+            }
+            continue;
+          }
+
+          const nextEntry = { ...entry, acceptedAt: acceptedAtIso };
+
+          if (timersRef.current[entry.orderId]) {
+            clearTimeout(timersRef.current[entry.orderId]);
+          }
+
+          timersRef.current[entry.orderId] = setTimeout(async () => {
+            try {
+              await updateDoc(doc(db, "orders", entry.orderId), {
+                status: "completed",
+              });
+            } catch (error) {
+              console.error("Failed to mark order completed:", error);
+            } finally {
+              const latest =
+                JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
+              const filtered = latest.filter(
+                (pending) => pending.orderId !== entry.orderId
+              );
+              await AsyncStorage.setItem(
+                "pendingOrders",
+                JSON.stringify(filtered)
+              );
+              if (timersRef.current[entry.orderId]) {
+                clearTimeout(timersRef.current[entry.orderId]);
+                delete timersRef.current[entry.orderId];
+              }
+            }
+          }, remaining);
+
+          updatedEntries.push(nextEntry);
         }
 
-        const orderTime = new Date(order.createdAt);
-        const diff = now.getTime() - orderTime.getTime();
-
-        if (diff >= 60000) {
-          await updateDoc(orderDocRef, { status: "completed" });
-          pendingOrders = pendingOrders.filter(
-            (p) => p.orderId !== order.orderId
-          );
-          await AsyncStorage.setItem(
-            "pendingOrders",
-            JSON.stringify(pendingOrders)
-          );
-        } else {
-          setTimeout(async () => {
-            await updateDoc(orderDocRef, { status: "completed" });
-            const updatedPendingOrders =
-              JSON.parse(await AsyncStorage.getItem("pendingOrders")) || [];
-            const filtered = updatedPendingOrders.filter(
-              (p) => p.orderId !== order.orderId
-            );
-            await AsyncStorage.setItem(
-              "pendingOrders",
-              JSON.stringify(filtered)
-            );
-          }, 60000 - diff);
+        if (!isActive) {
+          return;
         }
+
+        await AsyncStorage.setItem(
+          "pendingOrders",
+          JSON.stringify(updatedEntries)
+        );
+      } catch (error) {
+        console.error("Failed to manage pending order timers:", error);
       }
     };
 
-    checkPendingOrders();
-  }, []);
+    managePendingOrderTimers();
+
+    return () => {
+      isActive = false;
+      Object.values(timersRef.current).forEach((timer) =>
+        clearTimeout(timer)
+      );
+      timersRef.current = {};
+    };
+  }, [inProgressOrders]);
 
   const summaryMetrics = useMemo(() => {
     const totalSpent = historyOrders.reduce(
@@ -882,6 +1125,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#4B5563",
+  },
+  waitingWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(245,158,11,0.12)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+  },
+  waitingText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#B45309",
   },
   viewShopLink: {
     flexDirection: "row",

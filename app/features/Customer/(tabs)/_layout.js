@@ -31,33 +31,33 @@ export default function CustomerLayout() {
         }}
       />
       <Tabs.Screen
-        name="wallet"
-        options={{
-          tabBarLabel: "Wallet",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarAnimatedIcon
-              name="wallet"
-              size={22}
-              color={color}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="orderHistory"
         options={{
           tabBarLabel: "Order",
           tabBarIcon: ({ color, focused }) => (
             <TabBarAnimatedIcon
-              name="list"
-              size={22}
-              color={color}
-              focused={focused}
+            name="list"
+            size={22}
+            color={color}
+            focused={focused}
             />
           ),
         }}
       />
+        <Tabs.Screen
+          name="wallet"
+          options={{
+            tabBarLabel: "Wallet",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarAnimatedIcon
+                name="wallet"
+                size={22}
+                color={color}
+                focused={focused}
+              />
+            ),
+          }}
+        />
       <Tabs.Screen
         name="menu"
         options={{

@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 
 const CircularCountdown = ({ duration = 10 }) => {
-  const [remainingTime, setRemainingTime] = useState(duration);
+  const initialTime = Math.max(0, Math.ceil(Number(duration) || 0));
+  const [remainingTime, setRemainingTime] = useState(initialTime);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -18,7 +19,7 @@ const CircularCountdown = ({ duration = 10 }) => {
 
     // ตัวจับเวลานับถอยหลัง
     const interval = setInterval(() => {
-      setRemainingTime(prev => {
+      setRemainingTime((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
           return 0;
@@ -55,7 +56,9 @@ const CircularCountdown = ({ duration = 10 }) => {
 
       {/* ตัวเลขตรงกลาง */}
       <View style={styles.innerCircle}>
-        <Text style={styles.timerText}>{Math.floor(remainingTime)}</Text>
+        <Text style={styles.timerText}>
+          {Math.max(0, Math.ceil(remainingTime))}
+        </Text>
       </View>
     </View>
   );
