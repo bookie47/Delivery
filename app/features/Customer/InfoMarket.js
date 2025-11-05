@@ -27,8 +27,11 @@ export default function InfoMarket() {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState({});
   const [open, setOpen] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [successInfo, setSuccessInfo] = useState(null);
   const badgeScale = useRef(new Animated.Value(0)).current;
+  const successOpacity = useRef(new Animated.Value(0)).current;
+  const successScale = useRef(new Animated.Value(0.9)).current;
+  const successTimeoutRef = useRef(null);
   const { id } = useLocalSearchParams();
 
   useEffect(() => {
@@ -86,13 +89,6 @@ export default function InfoMarket() {
   }, [cart, shop]);
 
   useEffect(() => {
-    if (orderPlaced) {
-      setOpen(false);
-      router.push("/features/Customer/orderHistory");
-    }
-  }, [orderPlaced]);
-
-  useEffect(() => {
     if (totalItems > 0) {
       Animated.sequence([
         Animated.spring(badgeScale, {
@@ -112,6 +108,15 @@ export default function InfoMarket() {
       badgeScale.setValue(0);
     }
   }, [totalItems]);
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+        successTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleOrderSuccess = async () => {
     const user = auth.currentUser;
@@ -204,12 +209,56 @@ export default function InfoMarket() {
         "pendingOrders",
         JSON.stringify(pendingOrders)
       );
-      Alert.alert(
-        "Success",
-        `Order placed successfully!\nShop order number: ${orderNumber}`
-      );
       setCart({});
-      setOrderPlaced(true);
+      setOpen(false);
+
+      const summary = {
+        orderNumber,
+        shopOrderNumber,
+        itemCount: totalItems,
+        total: orderTotal,
+      };
+
+      setSuccessInfo(summary);
+      successOpacity.setValue(0);
+      successScale.setValue(0.9);
+
+      Animated.parallel([
+        Animated.timing(successOpacity, {
+          toValue: 1,
+          duration: 260,
+          useNativeDriver: true,
+        }),
+        Animated.spring(successScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 6,
+          tension: 120,
+        }),
+      ]).start();
+
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+
+      successTimeoutRef.current = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(successOpacity, {
+            toValue: 0,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+          Animated.timing(successScale, {
+            toValue: 0.9,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          successTimeoutRef.current = null;
+          setSuccessInfo(null);
+          router.push("/features/Customer/orderHistory");
+        });
+      }, 3000);
     } catch (error) {
       if (error.message === "INSUFFICIENT_FUNDS") {
         Alert.alert("Error", "Insufficient funds.");
@@ -389,6 +438,48 @@ export default function InfoMarket() {
           handleOrder={handleOrderSuccess}
         />
       </View>
+
+      {successInfo ? (
+        <Animated.View style={[styles.successOverlay, { opacity: successOpacity }]}>
+          <Animated.View
+            style={[styles.successCard, { transform: [{ scale: successScale }] }]}
+          >
+            <View style={styles.successIconWrapper}>
+              <Ionicons name="checkmark" size={28} color="#fff" />
+            </View>
+            <Text style={styles.successTitle}>Order Confirmed</Text>
+            <Text style={styles.successSubtitle}>
+              Your order is on its way to the kitchen.
+            </Text>
+
+            <View style={styles.successMetaRow}>
+              <View style={styles.successMetaCard}>
+                <Text style={styles.successMetaLabel}>Order No.</Text>
+                <Text style={styles.successMetaValue}>
+                  {successInfo.orderNumber || "-"}
+                </Text>
+              </View>
+              <View style={styles.successMetaCard}>
+                <Text style={styles.successMetaLabel}>Queue</Text>
+                <Text style={styles.successMetaValue}>
+                  {successInfo.shopOrderNumber != null
+                    ? `#${String(successInfo.shopOrderNumber).padStart(3, "0")}`
+                    : "-"}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.successMetaWide}>
+              <Text style={styles.successMetaLabel}>Total Paid</Text>
+              <Text style={styles.successMetaTotal}>
+                {Number(successInfo.total || 0).toFixed(2)} THB
+              </Text>
+            </View>
+            <Text style={styles.successFooterNote}>
+              Items: {successInfo.itemCount || 0} · Redirecting shortly...
+            </Text>
+          </Animated.View>
+        </Animated.View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -642,6 +733,93 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 2,
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,24,39,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  successCard: {
+    width: "100%",
+    maxWidth: 320,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    gap: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  successIconWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#10B981",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  successSubtitle: {
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  successMetaRow: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+  },
+  successMetaCard: {
+    flex: 1,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "flex-start",
+    gap: 4,
+  },
+  successMetaLabel: {
+    fontSize: 12,
+    color: "#6B7280",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  successMetaValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  successMetaWide: {
+    width: "100%",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    gap: 6,
+  },
+  successMetaTotal: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FA4A0C",
+  },
+  successFooterNote: {
+    fontSize: 12,
+    color: "#9CA3AF",
   },
   emptyMenuText: {
     textAlign: "center",
