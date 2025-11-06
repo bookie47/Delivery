@@ -31,8 +31,7 @@ import { router } from "expo-router";
 export default function Profile() {
   const avatar = require("../../../assets/profile/default.jpg");
   const [user, setUser] = useState(null);
-  const [firstName, setFirstName] = useState("");
-  const [surename, setSurename] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -82,8 +81,7 @@ export default function Profile() {
       ]);
 
       let profileData = {
-        firstName: "",
-        surename: "",
+        name: "",
         email: currentUser.email || "",
         phone: "",
         address: "",
@@ -93,29 +91,23 @@ export default function Profile() {
       if (userSnap.exists()) {
         const data = userSnap.data();
         profileData = {
-          firstName: data.name || "",
-          surename: data.surename || "",
+          name: data.name || "",
           email: data.email || currentUser.email || "",
           phone: data.phone || "",
           address: data.address || "",
           wallet: Number(data.wallet || 0),
         };
       } else {
-        const displayName = currentUser.displayName || "";
-        const [first, ...rest] = displayName.split(" ");
-        profileData.firstName = first || "";
-        profileData.surename = rest.join(" ") || "";
+        profileData.name = currentUser.displayName || "";
       }
 
-      setFirstName(profileData.firstName);
-      setSurename(profileData.surename);
+      setName(profileData.name);
       setEmail(profileData.email);
       setPhone(profileData.phone);
       setAddress(profileData.address);
       setWallet(profileData.wallet);
       setProfileSnapshot({
-        firstName: profileData.firstName,
-        surename: profileData.surename,
+        name: profileData.name,
         phone: profileData.phone,
         address: profileData.address,
       });
@@ -184,8 +176,7 @@ export default function Profile() {
   }, [loading, pulse]);
 
   const hasProfileChanges = profileSnapshot
-    ? firstName.trim() !== profileSnapshot.firstName ||
-      surename.trim() !== profileSnapshot.surename ||
+    ? name.trim() !== profileSnapshot.name ||
       (phone || "").trim() !== (profileSnapshot.phone || "") ||
       (address || "").trim() !== (profileSnapshot.address || "")
     : false;
@@ -207,13 +198,12 @@ export default function Profile() {
 
   const handleUpdateProfile = async () => {
     if (!user || saving || !hasProfileChanges) return;
-    const trimmedFirstName = firstName.trim();
-    const trimmedSurname = surename.trim();
+    const trimmedName = name.trim();
     const trimmedPhone = (phone || "").trim();
     const trimmedAddress = (address || "").trim();
 
-    if (!trimmedFirstName || !trimmedSurname) {
-      Alert.alert("Incomplete", "Please provide both first name and surname.");
+    if (!trimmedName) {
+      Alert.alert("Incomplete", "Please provide your name.");
       return;
     }
 
@@ -227,8 +217,7 @@ export default function Profile() {
       await setDoc(
         doc(db, "users", user.uid),
         {
-          name: trimmedFirstName,
-          surename: trimmedSurname,
+          name: trimmedName,
           phone: trimmedPhone,
           address: trimmedAddress,
           email,
@@ -236,8 +225,7 @@ export default function Profile() {
         { merge: true }
       );
       setProfileSnapshot({
-        firstName: trimmedFirstName,
-        surename: trimmedSurname,
+        name: trimmedName,
         phone: trimmedPhone,
         address: trimmedAddress,
       });
@@ -310,7 +298,7 @@ export default function Profile() {
                   <SkeletonLine width={160} height={20} />
                 ) : (
                   <Text style={styles.profileName}>
-                    {firstName || "Guest"} {surename}
+                    {name || "Guest"}
                   </Text>
                 )}
                 {loading ? (
@@ -425,19 +413,10 @@ export default function Profile() {
               <View style={styles.inputRow}>
                 <Ionicons name="person-outline" size={18} color="#6B7280" />
                 <TextInput
-                  placeholder="First name"
+                  placeholder="Name"
                   style={styles.input}
-                  value={firstName}
-                  onChangeText={setFirstName}
-                />
-              </View>
-              <View style={styles.inputRow}>
-                <Ionicons name="person" size={18} color="#6B7280" />
-                <TextInput
-                  placeholder="Surname"
-                  style={styles.input}
-                  value={surename}
-                  onChangeText={setSurename}
+                  value={name}
+                  onChangeText={setName}
                 />
               </View>
               <View style={styles.inputRow}>

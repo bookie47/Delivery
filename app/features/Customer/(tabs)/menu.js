@@ -1,21 +1,52 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import FocusFade from '../../../../components/FocusFade';
+import { auth, db } from '../../../../firebase/connect';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const profilePlaceholder = require('../../../../assets/profile/default.jpg');
 
 export default function Menu() {
-  const profile = useMemo(
-    () => ({
-      name: 'KU CPE',
-      email: 'example@gmail.com',
-      avatar: profilePlaceholder,
-    }),
-    [],
-  );
+  const [profile, setProfile] = useState({
+    name: 'Guest',
+    email: 'guest@example.com',
+    avatar: profilePlaceholder,
+  });
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          setProfile({
+            name: data.name || currentUser.displayName || 'User',
+            email: data.email || currentUser.email || 'No Email',
+            avatar: profilePlaceholder, // Assuming avatar is always placeholder for now
+          });
+        } else {
+          setProfile({
+            name: currentUser.displayName || 'User',
+            email: currentUser.email || 'No Email',
+            avatar: profilePlaceholder,
+          });
+        }
+      } else {
+        setProfile({
+          name: 'Guest',
+          email: 'guest@example.com',
+          avatar: profilePlaceholder,
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const menuItems = [
     {

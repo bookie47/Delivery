@@ -581,7 +581,7 @@ export default function OrderHistory() {
         label: "History",
         subtitle: "Browse completed orders anytime",
         icon: "time-outline",
-        accent: "#2563EB",
+        accent: "#19bc00ff",
         softAccent: "rgba(37,99,235,0.16)",
         count: historyOrders.length,
         emptyLabel: "No past orders yet.",
