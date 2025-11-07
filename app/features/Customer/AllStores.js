@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,11 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { collection, getDocs } from "firebase/firestore";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import AnimatedStoreCard from "../../../components/AnimatedStoreCard";
 import { SearchBar } from "../../../components/searchBar";
 import { db } from "../../../firebase/connect";
 
@@ -24,24 +26,33 @@ const SORT_OPTIONS = [
   { id: "name", label: "Name", helper: "A-Z" },
 ];
 const fallbackLogo = require("../../../assets/profile/default.jpg");
+const HEADER_HEIGHT = 140;
 
 export default function AllStores() {
+  const insets = useSafeAreaInsets();
   const [stores, setStores] = useState([]);
   const [loadingStores, setLoadingStores] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState(DEFAULT_TAG);
   const [sortOption, setSortOption] = useState(SORT_OPTIONS[0]?.id ?? "top");
-  const [spotlightIndex, setSpotlightIndex] = useState(0);
+
+  // ────────────────────────────────
+  // 🔹 โหลดข้อมูลร้านจาก Firestore
+  // ────────────────────────────────
   useEffect(() => {
     async function fetchStores() {
       try {
         setLoadingStores(true);
         const querySnapshot = await getDocs(collection(db, "info"));
-        const data = querySnapshot.docs.map((d) => ({
-          id: Number(d.id),
-          ...d.data(),
-        }));
-        data.sort((a, b) => a.id - b.id);
+        const data = querySnapshot.docs.map((d) => {
+          const docData = d.data();
+          return {
+            ...docData,
+            id: docData.id,
+            docId: d.id,
+          };
+        });
+        data.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
         setStores(data);
       } catch (error) {
         console.error("Error loading Firestore data:", error);
@@ -52,346 +63,263 @@ export default function AllStores() {
     fetchStores();
   }, []);
 
+  // ────────────────────────────────
+  // 🔹 ดึง Tag ทั้งหมดจากร้าน
+  // ────────────────────────────────
   const tagOptions = useMemo(() => {
     const foundTags = stores
-      .map((store) => {
-        if (typeof store?.tag === "string" && store.tag.trim().length) {
-          return store.tag.trim();
-        }
-        return null;
-      })
+      .map((store) =>
+        typeof store?.tag === "string" && store.tag.trim().length
+          ? store.tag.trim()
+          : null
+      )
       .filter(Boolean);
-
     const unique = Array.from(new Set(foundTags));
     return unique.length ? [DEFAULT_TAG, ...unique] : [DEFAULT_TAG];
   }, [stores]);
 
+  // รีเซ็ต tag ถ้าไม่เจอในร้าน
   useEffect(() => {
-    if (!tagOptions.includes(activeTag)) {
-      setActiveTag(DEFAULT_TAG);
-    }
+    if (!tagOptions.includes(activeTag)) setActiveTag(DEFAULT_TAG);
   }, [activeTag, tagOptions]);
 
+  // ────────────────────────────────
+  // 🔹 ประมวลผลร้าน (filter + sort)
+  // ────────────────────────────────
   const processedStores = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    const asRating = (value) => {
-      if (typeof value === "number") return value;
-      if (typeof value === "string") {
-        const parsed = parseFloat(value.replace(",", "."));
-        return Number.isFinite(parsed) ? parsed : 0;
-      }
-      return 0;
-    };
+    const asRating = (v) =>
+      typeof v === "number"
+        ? v
+        : typeof v === "string"
+        ? parseFloat(v.replace(",", ".")) || 0
+        : 0;
 
     let working = stores.filter(Boolean);
 
+    // filter จาก search
     if (normalizedQuery) {
       working = working.filter((store) => {
-        const name =
-          typeof store?.name === "string"
-            ? store.name
-            : store?.name
-            ? String(store.name)
-            : "";
-        const tag =
-          typeof store?.tag === "string"
-            ? store.tag
-            : store?.tag
-            ? String(store.tag)
-            : "";
+        const name = String(store?.name || "").toLowerCase();
+        const tag = String(store?.tag || "").toLowerCase();
         return (
-          name.toLowerCase().includes(normalizedQuery) ||
-          tag.toLowerCase().includes(normalizedQuery)
+          name.includes(normalizedQuery) || tag.includes(normalizedQuery)
         );
       });
     }
 
+    // filter จาก tag
     if (activeTag !== DEFAULT_TAG) {
-      working = working.filter((store) => store?.tag === activeTag);
+      working = working.filter((s) => s?.tag === activeTag);
     }
 
+    // sort
     const sorted = [...working];
-
-    if (sortOption === "recent") {
+    if (sortOption === "recent")
       sorted.sort((a, b) => (Number(b?.id) || 0) - (Number(a?.id) || 0));
-    } else if (sortOption === "name") {
-      sorted.sort((a, b) => {
-        const nameA =
-          typeof a?.name === "string" ? a.name : a?.name ? String(a.name) : "";
-        const nameB =
-          typeof b?.name === "string" ? b.name : b?.name ? String(b.name) : "";
-        return nameA.localeCompare(nameB, "th");
-      });
-    } else {
-      sorted.sort((a, b) => asRating(b?.rate) - asRating(a?.rate));
-    }
+    else if (sortOption === "name")
+      sorted.sort((a, b) =>
+        String(a?.name || "").localeCompare(String(b?.name || ""), "th")
+      );
+    else sorted.sort((a, b) => asRating(b?.rate) - asRating(a?.rate));
 
     return sorted;
   }, [stores, searchQuery, activeTag, sortOption]);
 
-  useEffect(() => {
-    setSpotlightIndex(0);
-  }, [processedStores.length, searchQuery]);
+  // ✅ listStores ต้องมาหลัง processedStores
+  const listStores = useMemo(() => processedStores, [processedStores]);
 
-  useEffect(() => {
-    if (searchQuery.trim().length > 0 || processedStores.length <= 1) {
-      return undefined;
-    }
+  // ────────────────────────────────
+  // 🔹 Suggestion สำหรับ SearchBar
+  // ────────────────────────────────
+  const searchSuggestionsMemo = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const matched = [];
 
-    const interval = setInterval(() => {
-      setSpotlightIndex((prev) => {
-        if (processedStores.length <= 1) {
-          return 0;
-        }
-        let next = Math.floor(Math.random() * processedStores.length);
-        if (next === prev) {
-          next = (next + 1) % processedStores.length;
-        }
-        return next;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [processedStores, searchQuery]);
-
-  const spotlightStore = useMemo(() => {
-    if (searchQuery.trim().length > 0 || !processedStores.length) return null;
-    const safeIndex = Math.min(spotlightIndex, processedStores.length - 1);
-    return processedStores[safeIndex];
-  }, [processedStores, searchQuery, spotlightIndex]);
-
-  const listStores = useMemo(() => {
-    if (!spotlightStore) return processedStores;
-    return processedStores.filter((store) => store?.id !== spotlightStore?.id);
-  }, [processedStores, spotlightStore]);
-
-  const storeStats = useMemo(() => {
-    if (!stores.length) {
-      return { total: 0, curated: 0, average: "0.0" };
-    }
-    const ratings = stores.map((store) => {
-      if (typeof store?.rate === "number") return store.rate;
-      if (typeof store?.rate === "string") {
-        const parsed = parseFloat(store.rate.replace(",", "."));
-        return Number.isFinite(parsed) ? parsed : 0;
-      }
-      return 0;
-    });
-    const curatedCount = ratings.filter((rate) => rate >= 4.5).length;
-    const average =
-      ratings.reduce((sum, rate) => sum + rate, 0) / ratings.length || 0;
-    return {
-      total: stores.length,
-      curated: curatedCount,
-      average: average.toFixed(1),
+    const add = (s) => {
+      if (!s?.id) return;
+      if (!matched.some((m) => m.id === s.id && m.type === s.type))
+        matched.push(s);
     };
-  }, [stores]);
 
+    stores.forEach((store) => {
+      const storeName = String(store?.name || "");
+      const storeTag = String(store?.tag || "");
+      const storeId = store?.id;
+
+      if (storeName.toLowerCase().includes(normalizedQuery))
+        add({ id: `store-${storeId}`, storeId, name: storeName, type: "store" });
+
+      if (storeTag.toLowerCase().includes(normalizedQuery))
+        add({ id: `tag-${storeId}-${storeTag}`, storeId, name: storeTag, type: "tag" });
+
+      store?.menu?.forEach((menu) => {
+        const menuName = String(menu?.name || "");
+        if (menuName.toLowerCase().includes(normalizedQuery))
+          add({
+            id: `menu-${storeId}-${menuName}`,
+            storeId,
+            name: menuName,
+            type: "menu",
+            storeName,
+          });
+      });
+    });
+
+    return matched;
+  }, [stores, searchQuery]);
+
+  // ────────────────────────────────
+  // 🔹 Helper ฟังก์ชัน
+  // ────────────────────────────────
   const formatEta = (store) => {
-    const numericId = Number(store?.id) || 0;
-    const base = 18 + (numericId % 6) * 3;
+    const n = Number(store?.id) || 0;
+    const base = 18 + (n % 6) * 3;
     return `${base}-${base + 6} min`;
   };
-
   const formatPriceBand = (store) => {
-    const numericId = Number(store?.id) || 0;
-    const levels = ["$", "$$", "$$$"];
-    return levels[numericId % levels.length];
+    const n = Number(store?.id) || 0;
+    return ["$", "$$", "$$$"][n % 3];
   };
+  const handleSelect = useCallback(
+    (item) => router.push(`/features/Customer/InfoMarket?id=${item.id}`),
+    []
+  );
 
-  const handleSelect = (item) => {
-    router.push(`/features/Customer/InfoMarket?id=${item.id}`);
-  };
+  // ────────────────────────────────
+  // 🔹 Header ของ FlatList
+  // ────────────────────────────────
+  const renderListHeader = useCallback(
+    () => (
+      <View style={styles.listHeader}>
+        {/* filter tags */}
+        {tagOptions.length > 1 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterPills}
+          >
+            {tagOptions.map((tag) => {
+              const isActive = activeTag === tag;
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => setActiveTag(tag)}
+                  style={[
+                    styles.filterPill,
+                    isActive && styles.filterPillActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterPillText,
+                      isActive && styles.filterPillTextActive,
+                    ]}
+                  >
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
 
-  const renderListHeader = () => (
-    <View style={styles.listHeader}>
-      <View style={styles.topBar}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={20} color="#111827" />
-        </TouchableOpacity>
-        <View style={styles.topBarText}>
-          <Text style={styles.pageTitle}>Discover Restaurants</Text>
-          <Text style={styles.pageSubtitle}>
-            Curated {storeStats.total} places for every craving
-          </Text>
-        </View>
-        <View style={styles.topBarAction}>
-          <Ionicons name="location-outline" size={20} color="#FA4A0C" />
-        </View>
-      </View>
-
-      {/*
-      <View style={styles.heroCard}>
-        <View style={styles.heroTextBlock}>
-          <Text style={styles.heroEyebrow}>What are you craving?</Text>
-          <Text style={styles.heroTitle}>Discover standout spots nearby</Text>
-          <Text style={styles.heroSubtitle}>Fresh picks for quick bites and slow dinners</Text>
-        </View>
-        <View style={styles.heroStats}>
-          <View style={styles.heroStatChip}>
-            <Text style={styles.heroStatValue}>{storeStats.total}</Text>
-            <Text style={styles.heroStatLabel}>Total stores</Text>
-          </View>
-          <View style={styles.heroStatChip}>
-            <Text style={styles.heroStatValue}>{storeStats.curated}</Text>
-            <Text style={styles.heroStatLabel}>Rated 4.5+</Text>
-          </View>
-          <View style={styles.heroStatChip}>
-            <Text style={styles.heroStatValue}>{storeStats.average}</Text>
-            <Text style={styles.heroStatLabel}>Avg rating</Text>
-          </View>
-        </View>
-      </View>
-      */}
-
-      <SearchBar
-        onSearch={setSearchQuery}
-        placeholder="Search stores, menus, or cuisine"
-        style={styles.searchBar}
-      />
-
-      {tagOptions.length > 1 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterPills}
-        >
-          {tagOptions.map((tag) => {
-            const isActive = activeTag === tag;
+        {/* sort options */}
+        <View style={styles.sortRow}>
+          {SORT_OPTIONS.map((option) => {
+            const isActive = sortOption === option.id;
             return (
               <TouchableOpacity
-                key={tag}
-                onPress={() => setActiveTag(tag)}
-                style={[styles.filterPill, isActive && styles.filterPillActive]}
+                key={option.id}
+                onPress={() => setSortOption(option.id)}
+                style={[styles.sortChip, isActive && styles.sortChipActive]}
               >
                 <Text
                   style={[
-                    styles.filterPillText,
-                    isActive && styles.filterPillTextActive,
+                    styles.sortChipLabel,
+                    isActive && styles.sortChipLabelActive,
                   ]}
                 >
-                  {tag}
+                  {option.label}
+                </Text>
+                <Text
+                  style={[
+                    styles.sortChipHelper,
+                    isActive && styles.sortChipHelperActive,
+                  ]}
+                >
+                  {option.helper}
                 </Text>
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
-      ) : null}
+        </View>
 
-      <View style={styles.sortRow}>
-        {SORT_OPTIONS.map((option) => {
-          const isActive = sortOption === option.id;
-          return (
-            <TouchableOpacity
-              key={option.id}
-              onPress={() => setSortOption(option.id)}
-              style={[styles.sortChip, isActive && styles.sortChipActive]}
-            >
-              <Text
-                style={[
-                  styles.sortChipLabel,
-                  isActive && styles.sortChipLabelActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-              <Text
-                style={[
-                  styles.sortChipHelper,
-                  isActive && styles.sortChipHelperActive,
-                ]}
-              >
-                {option.helper}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {spotlightStore ? (
-        <View style={styles.spotlightSection}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleWrap}>
-              <Ionicons name="flame-outline" size={18} color="#FA4A0C" />
-              <Text style={styles.sectionTitle}>Recommended today</Text>
-            </View>
-            <TouchableOpacity onPress={() => handleSelect(spotlightStore)}>
-              <Text style={styles.sectionAction}>See details</Text>
-            </TouchableOpacity>
+        <View style={[styles.sectionHeader, styles.sectionHeaderSpacing]}>
+          <View style={styles.sectionTitleWrap}>
+            <Ionicons name="storefront-outline" size={18} color="#111827" />
+            <Text style={styles.sectionTitle}>All restaurants</Text>
           </View>
-          <AnimatedStoreCard
-            item={spotlightStore}
-            index={0}
-            onPress={() => handleSelect(spotlightStore)}
-            variant="banner"
-          />
+          <Text style={styles.sectionCount}>{listStores.length} stores</Text>
         </View>
-      ) : null}
-
-      <View style={[styles.sectionHeader, styles.sectionHeaderSpacing]}>
-        <View style={styles.sectionTitleWrap}>
-          <Ionicons name="storefront-outline" size={18} color="#111827" />
-          <Text style={styles.sectionTitle}>All restaurants</Text>
-        </View>
-        <Text style={styles.sectionCount}>{processedStores.length} stores</Text>
       </View>
-    </View>
+    ),
+    [activeTag, sortOption, listStores.length, tagOptions]
   );
 
-  const renderStoreItem = ({ item }) => {
-    const logoSource =
-      typeof item?.logo === "string" && item.logo.length
-        ? { uri: item.logo }
-        : fallbackLogo;
+  // ────────────────────────────────
+  // 🔹 render รายการร้าน
+  // ────────────────────────────────
+  const renderStoreItem = useCallback(
+    ({ item }) => {
+      const logoSource =
+        typeof item?.logo === "string" && item.logo.length
+          ? { uri: item.logo }
+          : fallbackLogo;
 
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => handleSelect(item)}
-        activeOpacity={0.94}
-      >
-        <View style={styles.cardImageWrapper}>
-          <Image source={logoSource} style={styles.cardImage} />
-          <View style={styles.cardOverlay} />
-          <View style={styles.ratingBadge}>
-            <Ionicons name="star" size={12} color="#FBBF24" />
-            <Text style={styles.ratingText}>
-              {typeof item?.rate === "number"
-                ? item.rate.toFixed(1)
-                : Number.parseFloat(item?.rate)?.toFixed(1) || "0.0"}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.cardBody}>
-          <Text style={styles.cardName} numberOfLines={2}>
-            {item?.name || "House Special"}
-          </Text>
-          {item?.tag ? (
-            <View style={styles.cardTagRow}>
-              <Ionicons name="pricetag-outline" size={14} color="#6B7280" />
-              <Text style={styles.cardTagText} numberOfLines={1}>
-                {item.tag}
+      return (
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleSelect(item)}
+          activeOpacity={0.94}
+        >
+          <View style={styles.cardImageWrapper}>
+            <Image source={logoSource} style={styles.cardImage} />
+            <View style={styles.cardOverlay} />
+            <View style={styles.ratingBadge}>
+              <Ionicons name="star" size={12} color="#FBBF24" />
+              <Text style={styles.ratingText}>
+                {parseFloat(item?.rate || 0).toFixed(1)}
               </Text>
             </View>
-          ) : null}
-          <View style={styles.cardMetaRow}>
-            <View style={styles.metaChip}>
-              <Ionicons name="time-outline" size={12} color="#FA4A0C" />
-              <Text style={styles.metaChipText}>{formatEta(item)}</Text>
-            </View>
-            <View style={styles.metaChip}>
-              <Ionicons name="cash-outline" size={12} color="#FA4A0C" />
-              <Text style={styles.metaChipText}>{formatPriceBand(item)}</Text>
+          </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardName} numberOfLines={2}>
+              {item?.name || "House Special"}
+            </Text>
+            {item?.tag && (
+              <View style={styles.cardTagRow}>
+                <Ionicons name="pricetag-outline" size={14} color="#6B7280" />
+                <Text style={styles.cardTagText}>{item.tag}</Text>
+              </View>
+            )}
+            <View style={styles.cardMetaRow}>
+              <View style={styles.metaChip}>
+                <Ionicons name="time-outline" size={12} color="#FA4A0C" />
+                <Text style={styles.metaChipText}>{formatEta(item)}</Text>
+              </View>
+              <View style={styles.metaChip}>
+                <Ionicons name="cash-outline" size={12} color="#FA4A0C" />
+                <Text style={styles.metaChipText}>{formatPriceBand(item)}</Text>
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+        </TouchableOpacity>
+      );
+    },
+    [handleSelect]
+  );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -407,8 +335,11 @@ export default function AllStores() {
 
   const isGrid = listStores.length > 1;
 
+  // ────────────────────────────────
+  // 🔹 Render UI
+  // ────────────────────────────────
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["bottom", "left", "right"]}>
       {loadingStores ? (
         <View style={styles.loaderWrapper}>
           <ActivityIndicator size="large" color="#FA4A0C" />
@@ -418,30 +349,55 @@ export default function AllStores() {
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={listStores}
-          keyExtractor={(item) =>
-            item?.id ? item.id.toString() : Math.random().toString()
-          }
-          numColumns={isGrid ? 2 : 1}
-          columnWrapperStyle={isGrid ? styles.columnWrapper : undefined}
-          renderItem={renderStoreItem}
-          contentContainerStyle={[
-            styles.listContent,
-            isGrid ? styles.listContentGrid : styles.listContentSingle,
-            !listStores.length && !spotlightStore
-              ? styles.listEmptyPadding
-              : undefined,
-          ]}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={renderListHeader}
-          ListFooterComponent={<View style={{ height: 28 }} />}
-          ListEmptyComponent={!spotlightStore ? renderEmptyState : null}
-        />
+        <View style={{ flex: 1 }}>
+          <FlatList
+            key={`stores-${isGrid ? "grid" : "single"}`}
+            data={listStores}
+            extraData={{ sortOption, activeTag, searchQuery }}
+            keyExtractor={(i) => i?.docId || String(i.id)}
+            numColumns={isGrid ? 2 : 1}
+            columnWrapperStyle={isGrid ? styles.columnWrapper : undefined}
+            renderItem={renderStoreItem}
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingTop: HEADER_HEIGHT },
+              isGrid ? styles.listContentGrid : styles.listContentSingle,
+              !listStores.length ? styles.listEmptyPadding : undefined,
+            ]}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={renderListHeader}
+            ListFooterComponent={<View style={{ height: 28 }} />}
+            ListEmptyComponent={renderEmptyState}
+          />
+
+          {/* 🔹 Floating Search Header */}
+          <View style={[styles.floatingHeader, { paddingTop: insets.top }]}>
+            <View style={styles.topBar}>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.backButton}
+              >
+                <Ionicons name="chevron-back" size={20} color="#111827" />
+              </TouchableOpacity>
+              <View style={styles.topBarText}>
+                <Text style={styles.pageTitle}>Discover Restaurants</Text>
+                <Text style={styles.pageSubtitle}>
+                  Curated {stores.length} places for every craving
+                </Text>
+              </View>
+              <View style={styles.topBarAction}>
+                <Ionicons name="location-outline" size={20} color="#FA4A0C" />
+              </View>
+            </View>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
 }
+
+// (styles เดิมทั้งหมดคงไว้ ไม่ต้องแก้)
+
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -466,10 +422,22 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 20,
   },
+  floatingHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
   listHeader: {
     paddingHorizontal: 20,
     paddingBottom: 24,
-    paddingTop: 12,
     gap: 20,
   },
   topBar: {
@@ -511,54 +479,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  heroCard: {
-    backgroundColor: "#1F2937",
-    borderRadius: 24,
-    padding: 20,
-    overflow: "hidden",
-  },
-  heroTextBlock: {
-    gap: 6,
-  },
-  heroEyebrow: {
-    color: "rgba(255,255,255,0.68)",
-    fontSize: 12,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#FFFFFF",
-  },
-  heroSubtitle: {
-    color: "rgba(255,255,255,0.78)",
-  },
-  heroStats: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 18,
-  },
-  heroStatChip: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    alignItems: "flex-start",
-    minWidth: 92,
-  },
-  heroStatValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  heroStatLabel: {
-    color: "rgba(255,255,255,0.68)",
-    fontSize: 12,
-    marginTop: 2,
-  },
   searchBar: {
-    marginTop: -8,
+    // No specific style overrides needed now
   },
   filterPills: {
     gap: 12,

@@ -9,11 +9,15 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
+const MAX_SUGGESTIONS_HEIGHT = 360;
+
+export const SEARCH_PLACEHOLDER = 'Search restaurants or dishes';
+
 export const SearchBar = ({
   onSearch,
   suggestions = [],
   onSelect = () => {},
-  placeholder = 'ค้นหาร้านหรือเมนูที่คุณชอบ',
+  placeholder = SEARCH_PLACEHOLDER,
   style,
 }) => {
   const [query, setQuery] = useState('');
@@ -62,11 +66,14 @@ export const SearchBar = ({
       </View>
 
       {hasSuggestions && (
-        <View style={styles.suggestionsContainer}>
+        <View style={styles.suggestionsContainer} pointerEvents="box-none">
           <FlatList
             keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
             data={suggestions}
+            style={styles.suggestionsList}
             keyExtractor={(item, index) => `${item.type || 'item'}-${item.id ?? index}`}
+            showsVerticalScrollIndicator
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => onSelect(item)}
@@ -87,6 +94,7 @@ export const SearchBar = ({
               </TouchableOpacity>
             )}
             ItemSeparatorComponent={() => <View style={styles.suggestionDivider} />}
+            contentContainerStyle={styles.suggestionsContent}
           />
         </View>
       )}
@@ -135,17 +143,25 @@ const styles = StyleSheet.create({
   },
   suggestionsContainer: {
     position: 'absolute',
-    top: 58,
+    top: 58, // Adjust this value based on the height of your search bar
     left: 0,
     right: 0,
     backgroundColor: '#fff',
     borderRadius: 16,
-    paddingVertical: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 6,
+    zIndex: 9999, // Ensure suggestions are on top of everything
+    maxHeight: MAX_SUGGESTIONS_HEIGHT,
+    overflow: 'hidden',
+  },
+  suggestionsList: {
+    maxHeight: MAX_SUGGESTIONS_HEIGHT,
+  },
+  suggestionsContent: {
+    paddingVertical: 6,
   },
   suggestionItem: {
     flexDirection: 'row',

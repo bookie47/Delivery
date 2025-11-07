@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { SearchBar } from '../components/searchBar';
+import { SearchBar, SEARCH_PLACEHOLDER } from '../components/searchBar';
 
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
@@ -10,14 +10,14 @@ jest.mock('@expo/vector-icons/Ionicons', () => {
 describe('<SearchBar />', () => {
   it('should display the placeholder text', () => {
     const { getByPlaceholderText } = render(<SearchBar />);
-    const input = getByPlaceholderText('ค้นหาร้านหรือเมนูที่คุณชอบ');
+    const input = getByPlaceholderText(SEARCH_PLACEHOLDER);
     expect(input).toBeTruthy();
   });
 
   it('should call the onSearch function when typing', () => {
     const mockOnSearch = jest.fn();
     const { getByPlaceholderText } = render(<SearchBar onSearch={mockOnSearch} />);
-    const input = getByPlaceholderText('ค้นหาร้านหรือเมนูที่คุณชอบ');
+    const input = getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     fireEvent.changeText(input, 'KFC');
 
@@ -27,7 +27,7 @@ describe('<SearchBar />', () => {
   it('should clear the input when the clear button is pressed', () => {
     const mockOnSearch = jest.fn();
     const { getByPlaceholderText, getByLabelText } = render(<SearchBar onSearch={mockOnSearch} />);
-    const input = getByPlaceholderText('ค้นหาร้านหรือเมนูที่คุณชอบ');
+    const input = getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     fireEvent.changeText(input, 'KFC');
     fireEvent.press(getByLabelText('Clear search'));
@@ -39,7 +39,7 @@ describe('<SearchBar />', () => {
   it('should call the onSearch function when the search button is pressed', () => {
     const mockOnSearch = jest.fn();
     const { getByPlaceholderText, getByLabelText } = render(<SearchBar onSearch={mockOnSearch} />);
-    const input = getByPlaceholderText('ค้นหาร้านหรือเมนูที่คุณชอบ');
+    const input = getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     fireEvent.changeText(input, 'KFC');
     fireEvent.press(getByLabelText('Search'));
