@@ -330,9 +330,10 @@ export default function InfoMarket() {
             {loading ? (
               [...Array(4)].map((_, idx) => <SkeletonItem key={idx} />)
             ) : shop?.menu?.length ? (
-              shop.menu.map((item) => {
+              shop.menu.map((item,index) => {
                 const quantity = cart[item.id] || 0;
                 const displayPrice = Number(item.price || 0).toFixed(2);
+               const menuKey = `${id}-${item.id}-${index}`;
                 const imageSource = item?.uri
                   ? { uri: item.uri }
                   : item?.imageUrl
@@ -341,7 +342,7 @@ export default function InfoMarket() {
                   ? { uri: shop.logo }
                   : placeholder;
                 return (
-                  <View key={item.id} style={styles.menuCardWrapper}>
+                  <View key={menuKey} style={styles.menuCardWrapper}>
                     <View style={styles.menuCard}>
                       <View style={styles.menuAccentBar} />
                       <View style={styles.menuImageWrapper}>
